@@ -80,7 +80,7 @@ function PostPage() {
       </header>
 
       <div className="mt-10 space-y-5 text-[15px] leading-relaxed text-muted-foreground">
-        {post.content.map((para, i) => (
+        {post.content.map((para: string, i: number) => (
           <p key={i}>{para}</p>
         ))}
       </div>
