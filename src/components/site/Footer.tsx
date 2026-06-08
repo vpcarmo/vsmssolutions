@@ -15,9 +15,9 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-md text-sm text-muted-foreground">
-              Soluções digitais inteligentes para pessoas, profissionais e empresas.
-              Sistemas web, SaaS, inteligência artificial e automação que aceleram
-              o seu negócio.
+              Empresa de tecnologia orientada a produto. Criamos e operamos
+              plataformas SaaS, soluções de IA e ferramentas digitais próprias
+              para pessoas e empresas.
             </p>
             <div className="mt-6 flex items-center gap-3">
               {[
@@ -41,9 +41,9 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold">Empresa</h4>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/sobre" className="hover:text-foreground">Sobre</Link></li>
-              <li><Link to="/servicos" className="hover:text-foreground">Serviços</Link></li>
               <li><Link to="/produtos" className="hover:text-foreground">Produtos</Link></li>
+              <li><Link to="/servicos" className="hover:text-foreground">Serviços de apoio</Link></li>
+              <li><Link to="/sobre" className="hover:text-foreground">Sobre</Link></li>
               <li><Link to="/portfolio" className="hover:text-foreground">Portfólio</Link></li>
               <li><Link to="/blog" className="hover:text-foreground">Blog</Link></li>
               <li><Link to="/contato" className="hover:text-foreground">Contato</Link></li>

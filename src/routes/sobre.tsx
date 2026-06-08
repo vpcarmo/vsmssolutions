@@ -5,9 +5,9 @@ export const Route = createFileRoute("/sobre")({
   head: () => ({
     meta: [
       { title: "Sobre — VSMS Solutions" },
-      { name: "description", content: "Conheça a VSMS Solutions: história, missão, visão e valores da empresa de tecnologia." },
-      { property: "og:title", content: "Sobre a VSMS Solutions" },
-      { property: "og:description", content: "Nossa história, missão, visão e valores." },
+      { name: "description", content: "VSMS Solutions: empresa de tecnologia orientada a produto, focada em SaaS próprios, IA aplicada e operação contínua de plataformas digitais." },
+      { property: "og:title", content: "Sobre a VSMS Solutions — Empresa de produto" },
+      { property: "og:description", content: "Empresa orientada a produto: SaaS próprios, IA aplicada e ecossistema em expansão." },
       { property: "og:url", content: "/sobre" },
     ],
     links: [{ rel: "canonical", href: "/sobre" }],
