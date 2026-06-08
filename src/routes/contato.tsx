@@ -42,7 +42,8 @@ function Contato() {
             Vamos <span className="text-gradient">conversar</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Conte sua ideia. Respondemos em até 1 dia útil com um plano objetivo.
+            Quer adotar um produto VSMS, integrar nossas plataformas ou tirar
+            dúvidas? Respondemos em até 1 dia útil.
           </p>
         </div>
       </section>
@@ -73,6 +74,25 @@ function Contato() {
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field id="company" label="Empresa" maxLength={120} />
                   <Field id="phone" label="Telefone / WhatsApp" maxLength={40} />
+                </div>
+                <div>
+                  <label htmlFor="subject" className="text-sm font-medium">
+                    Sobre o que você quer falar?<span className="ml-0.5 text-primary">*</span>
+                  </label>
+                  <select
+                    id="subject"
+                    name="subject"
+                    required
+                    defaultValue=""
+                    className="mt-1.5 block w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="" disabled>Selecione um assunto</option>
+                    <option value="produto">Quero usar um produto VSMS</option>
+                    <option value="implantacao">Implantação / integração</option>
+                    <option value="parceria">Parceria comercial</option>
+                    <option value="suporte">Suporte a cliente atual</option>
+                    <option value="outro">Outro assunto</option>
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="message" className="text-sm font-medium">

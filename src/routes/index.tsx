@@ -143,16 +143,16 @@ function Home() {
               <span className="text-gradient">movem pessoas e empresas</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground md:text-lg">
-              A VSMS Solutions cria e opera plataformas SaaS, soluções de
-              inteligência artificial e ferramentas digitais escaláveis —
-              feitas para durar e evoluir junto com você.
+              Somos uma empresa de tecnologia orientada a produto. Criamos e
+              operamos plataformas SaaS, soluções de inteligência artificial
+              e ferramentas digitais próprias — feitas para durar e evoluir.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/produtos"
                 className="inline-flex items-center gap-2 rounded-md bg-gradient-brand px-5 py-3 text-sm font-medium text-brand-foreground shadow-glow transition-transform hover:-translate-y-0.5"
               >
-                Conhecer o ecossistema <ArrowRight className="h-4 w-4" />
+                Explorar nossos produtos <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/contato"
@@ -161,6 +161,9 @@ function Home() {
                 Falar com a VSMS
               </Link>
             </div>
+            <p className="mt-5 text-xs text-muted-foreground">
+              SaaS próprios · IA aplicada · Operação contínua 24/7
+            </p>
           </div>
 
           {/* Stats */}
