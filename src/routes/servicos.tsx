@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Code2, Building2, Cloud, Bot, Workflow, Lightbulb, ArrowRight } from "lucide-react";
+import { PlugZap, Layers, Bot, LifeBuoy, Lightbulb, Workflow, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/servicos")({
   head: () => ({
     meta: [
-      { title: "Serviços — VSMS Solutions" },
-      { name: "description", content: "Desenvolvimento web, sistemas empresariais, SaaS, IA, automação e consultoria tecnológica." },
-      { property: "og:title", content: "Serviços — VSMS Solutions" },
-      { property: "og:description", content: "Web, sistemas, SaaS, IA, automação e consultoria." },
+      { title: "Serviços de apoio — VSMS Solutions" },
+      { name: "description", content: "Consultoria, implantação, integrações, customizações com IA e suporte especializado para os produtos do ecossistema VSMS." },
+      { property: "og:title", content: "Serviços de apoio — VSMS Solutions" },
+      { property: "og:description", content: "Consultoria, implantação, integrações e suporte para as plataformas VSMS." },
       { property: "og:url", content: "/servicos" },
     ],
     links: [{ rel: "canonical", href: "/servicos" }],
@@ -17,40 +17,40 @@ export const Route = createFileRoute("/servicos")({
 
 const categories = [
   {
-    icon: Code2,
-    title: "Desenvolvimento Web",
-    desc: "Sites institucionais, portais, landing pages e aplicações web modernas com foco em performance e SEO.",
-    items: ["Landing pages de alta conversão", "Sites institucionais", "Portais de conteúdo", "E-commerce"],
+    icon: Lightbulb,
+    title: "Consultoria estratégica",
+    desc: "Apoiamos a escolha do produto certo do ecossistema VSMS para o seu desafio, com diagnóstico e plano de adoção.",
+    items: ["Diagnóstico inicial", "Plano de adoção", "Roadmap de produto", "Mentoria contínua"],
   },
   {
-    icon: Building2,
-    title: "Sistemas Empresariais",
-    desc: "ERPs, CRMs e plataformas internas que organizam processos e dão visibilidade ao negócio.",
-    items: ["Dashboards executivos", "Gestão interna", "Integrações com legado", "Multi-tenant"],
+    icon: PlugZap,
+    title: "Implantação de plataformas",
+    desc: "Cuidamos da configuração, parametrização e onboarding das equipes nas nossas plataformas SaaS.",
+    items: ["Setup completo", "Migração de dados", "Treinamento de times", "Go-live assistido"],
   },
   {
-    icon: Cloud,
-    title: "SaaS",
-    desc: "Produtos digitais escaláveis, do MVP ao crescimento. Infraestrutura, billing, autenticação e produto.",
-    items: ["MVPs validados", "Arquitetura multi-tenant", "Billing e assinaturas", "Onboarding inteligente"],
+    icon: Layers,
+    title: "Integrações",
+    desc: "Conectamos os produtos VSMS ao seu ecossistema — ERPs, CRMs, gateways de pagamento e ferramentas internas.",
+    items: ["APIs e webhooks", "ERP / CRM", "Pagamentos", "Single Sign-On"],
   },
   {
     icon: Bot,
-    title: "Inteligência Artificial",
-    desc: "Agentes, copilots e integrações com LLMs aplicadas ao negócio — não hype.",
-    items: ["Chatbots inteligentes", "RAG sobre dados próprios", "Automação com IA", "Visão computacional"],
+    title: "Customizações com IA",
+    desc: "Adaptamos nossos módulos de IA — agentes, automações e fluxos — ao contexto do seu negócio.",
+    items: ["Agentes personalizados", "RAG sobre seus dados", "Automação de processos", "Fine-tuning de fluxos"],
   },
   {
     icon: Workflow,
-    title: "Automação",
-    desc: "Robôs, integrações entre sistemas e workflows que eliminam trabalho repetitivo.",
-    items: ["Integrações via API", "RPA", "Workflows n8n / Make", "ETL sob medida"],
+    title: "Automações sob medida",
+    desc: "Workflows e integrações que conectam nossos produtos a rotinas e sistemas específicos.",
+    items: ["Workflows internos", "Robôs de dados", "ETL pontual", "Relatórios automáticos"],
   },
   {
-    icon: Lightbulb,
-    title: "Consultoria",
-    desc: "Apoio estratégico em decisões técnicas, arquitetura e roadmap de produto.",
-    items: ["Auditoria de código", "Plano de transformação digital", "Mentoria de squads", "Discovery de produto"],
+    icon: LifeBuoy,
+    title: "Suporte especializado",
+    desc: "SLAs, acompanhamento técnico e evolução contínua das plataformas em produção.",
+    items: ["SLA dedicado", "Monitoramento", "Evolução de features", "Canal direto com o time"],
   },
 ];
 
@@ -61,13 +61,14 @@ function Servicos() {
         <div className="absolute inset-0 grid-bg" />
         <div className="absolute -top-32 left-1/2 h-64 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
-          <p className="text-sm font-medium text-primary">Serviços</p>
+          <p className="text-sm font-medium text-primary">Serviços de apoio</p>
           <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-            Soluções completas para <span className="text-gradient">cada etapa</span>
+            Para extrair o máximo dos <span className="text-gradient">produtos VSMS</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Do MVP ao produto em escala — passando por automação, IA e
-            consultoria estratégica.
+            Nossos serviços complementam o ecossistema VSMS — existem para
+            acelerar a adoção, integração e evolução das nossas plataformas
+            no seu negócio.
           </p>
         </div>
       </section>
@@ -95,15 +96,20 @@ function Servicos() {
 
         <div className="mt-16 rounded-3xl border border-border bg-surface p-10 text-center md:p-14">
           <h2 className="text-2xl font-bold md:text-3xl">
-            Não encontrou o que procura?
+            O foco está nos <span className="text-gradient">produtos</span>
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Trabalhamos sob demanda. Conte sua necessidade e desenhamos uma
-            solução específica.
+            Comece conhecendo o ecossistema VSMS — depois desenhamos juntos
+            o suporte que faz sentido para o seu contexto.
           </p>
-          <Link to="/contato" className="mt-6 inline-flex items-center gap-2 rounded-md bg-gradient-brand px-5 py-3 text-sm font-medium text-brand-foreground">
-            Falar com um especialista <ArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/produtos" className="inline-flex items-center gap-2 rounded-md bg-gradient-brand px-5 py-3 text-sm font-medium text-brand-foreground">
+              Ver produtos <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/contato" className="inline-flex items-center gap-2 rounded-md border border-border bg-surface/60 px-5 py-3 text-sm font-medium hover:bg-surface">
+              Falar com a equipe
+            </Link>
+          </div>
         </div>
       </section>
     </>
