@@ -90,6 +90,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0b0d18" },
+      { property: "og:title", content: "VSMS Solutions — Tecnologia que move o seu negócio" },
+      { name: "twitter:title", content: "VSMS Solutions — Tecnologia que move o seu negócio" },
+      { name: "description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
+      { property: "og:description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
+      { name: "twitter:description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2078370-bfd9-40ba-8e05-640866589a69/id-preview-cf329f77--a59d3604-e576-43a2-9f37-2d5ebe13bdcd.lovable.app-1780910420400.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2078370-bfd9-40ba-8e05-640866589a69/id-preview-cf329f77--a59d3604-e576-43a2-9f37-2d5ebe13bdcd.lovable.app-1780910420400.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
