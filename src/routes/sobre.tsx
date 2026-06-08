@@ -24,12 +24,12 @@ function Sobre() {
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <p className="text-sm font-medium text-primary">Sobre nós</p>
           <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-            Tecnologia com <span className="text-gradient">propósito</span>
+            Uma empresa orientada a <span className="text-gradient">produto</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Nascemos com uma convicção: software bem feito muda negócios. Hoje
-            unimos engenharia, design e IA para entregar soluções que geram
-            resultado real.
+            A VSMS Solutions cria e opera produtos digitais, plataformas SaaS
+            e soluções de inteligência artificial — pensados para escalar e
+            evoluir junto com pessoas e empresas.
           </p>
         </div>
       </section>
@@ -38,16 +38,17 @@ function Sobre() {
         <div className="prose-invert max-w-none space-y-6 text-muted-foreground">
           <h2 className="text-2xl font-semibold text-foreground">Nossa história</h2>
           <p>
-            A VSMS Solutions foi criada para preencher uma lacuna comum no
-            mercado brasileiro: empresas que precisam de tecnologia de
-            qualidade, mas raramente encontram parceiros que combinem
-            execução técnica de alto nível com visão de negócio.
+            A VSMS Solutions nasceu com uma convicção clara: o maior impacto
+            da tecnologia acontece quando ela vira produto — algo que pode
+            ser usado, evoluído e operado em escala, todos os dias.
           </p>
           <p>
-            Começamos com projetos pontuais e evoluímos para uma operação
-            completa de desenvolvimento de produtos digitais, SaaS, IA e
-            automação. Cada projeto entregue reforça nosso compromisso:
-            código limpo, prazos honestos e resultado mensurável.
+            Por isso, nosso foco principal é construir e operar plataformas
+            próprias dentro do ecossistema VSMS, como o Personal Virtual e o
+            SuperOfertas, além de novos SaaS e soluções de IA em
+            desenvolvimento. Nossos serviços de consultoria, implantação,
+            integrações e suporte existem como apoio estratégico para
+            potencializar o uso desses produtos.
           </p>
         </div>
       </section>
@@ -55,10 +56,10 @@ function Sobre() {
       <section className="border-y border-border bg-surface/30">
         <div className="mx-auto grid max-w-7xl gap-5 px-6 py-24 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: Target, title: "Missão", desc: "Transformar ideias em produtos digitais que geram valor real para pessoas e empresas." },
-            { icon: Eye, title: "Visão", desc: "Ser referência em soluções tecnológicas inovadoras, escaláveis e sustentáveis." },
-            { icon: Heart, title: "Valores", desc: "Excelência técnica, transparência, parceria de longo prazo e foco em resultado." },
-            { icon: Trophy, title: "Objetivo", desc: "Acelerar a transformação digital de empresas em todos os portes e segmentos." },
+            { icon: Target, title: "Missão", desc: "Criar produtos digitais e plataformas de IA que geram valor real e duradouro." },
+            { icon: Eye, title: "Visão", desc: "Ser referência em ecossistemas SaaS e soluções de IA escaláveis e sustentáveis." },
+            { icon: Heart, title: "Valores", desc: "Foco em produto, excelência técnica, transparência e visão de longo prazo." },
+            { icon: Trophy, title: "Objetivo", desc: "Expandir o ecossistema VSMS com novos produtos e impacto crescente." },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="rounded-2xl border border-border bg-card p-6">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-brand-foreground">
@@ -72,15 +73,15 @@ function Sobre() {
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-24">
-        <h2 className="text-2xl font-semibold">Diferenciais competitivos</h2>
+        <h2 className="text-2xl font-semibold">O que nos define</h2>
         <ul className="mt-6 grid gap-3 text-muted-foreground md:grid-cols-2">
           {[
-            "Time multidisciplinar com experiência em produtos reais",
+            "Empresa orientada a produto, não a serviço sob demanda",
+            "Ecossistema próprio de SaaS e ferramentas de IA",
+            "Operação contínua com SLA e evolução constante",
             "Stack moderna e escalável desde o dia 1",
-            "Metodologia ágil com entregas frequentes",
-            "Comunicação direta, sem camadas burocráticas",
-            "Cuidado obsessivo com performance e segurança",
-            "Suporte contínuo após o go-live",
+            "Serviços de apoio como complemento estratégico",
+            "Visão de longo prazo em cada produto que lançamos",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2 rounded-xl border border-border bg-card p-4 text-sm">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-brand" />

@@ -1,34 +1,36 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Code2,
+  Dumbbell,
+  ShoppingBag,
+  Sparkles,
+  Boxes,
   Cpu,
+  Rocket,
+  Layers,
   Bot,
   Workflow,
-  ShoppingBag,
-  Stethoscope,
-  Sparkles,
-  Zap,
-  Shield,
-  Layers,
+  PlugZap,
+  LifeBuoy,
   Quote,
+  Plus,
 } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "VSMS Solutions — Tecnologia que move o seu negócio" },
+      { title: "VSMS Solutions — Produtos digitais, SaaS e IA" },
       {
         name: "description",
         content:
-          "Desenvolvemos sistemas web, SaaS, inteligência artificial e automações sob medida para acelerar empresas, profissionais e ideias.",
+          "A VSMS Solutions cria e opera produtos digitais, plataformas SaaS e soluções de inteligência artificial para pessoas e empresas.",
       },
-      { property: "og:title", content: "VSMS Solutions" },
+      { property: "og:title", content: "VSMS Solutions — Ecossistema de produtos digitais" },
       {
         property: "og:description",
         content:
-          "Sistemas web, SaaS, IA e automação sob medida para empresas e profissionais.",
+          "Produtos próprios, SaaS e IA para escalar pessoas e empresas. Conheça o ecossistema VSMS.",
       },
       { property: "og:url", content: "/" },
     ],
@@ -37,52 +39,81 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+const products = [
+  {
+    icon: Dumbbell,
+    name: "Personal Virtual",
+    tag: "Fitness & Bem-estar",
+    status: "Disponível",
+    desc: "Plataforma de treinos personalizados com acompanhamento inteligente para alunos e profissionais de educação física.",
+  },
+  {
+    icon: ShoppingBag,
+    name: "SuperOfertas",
+    tag: "E-commerce & IA",
+    status: "Disponível",
+    desc: "Agregador de ofertas em tempo real com curadoria inteligente e alertas personalizados por perfil de consumo.",
+  },
+  {
+    icon: Plus,
+    name: "Novos produtos",
+    tag: "Em desenvolvimento",
+    status: "Em breve",
+    desc: "Estamos construindo novos SaaS e ferramentas de IA. O ecossistema VSMS está em expansão contínua.",
+  },
+];
+
+const pillars = [
+  {
+    icon: Boxes,
+    title: "Produtos digitais próprios",
+    desc: "Construímos e operamos nossas próprias plataformas — pensadas para escalar, não para entregar e sair.",
+  },
+  {
+    icon: Cpu,
+    title: "IA aplicada de verdade",
+    desc: "Inteligência artificial embarcada nos nossos produtos para gerar valor real, não hype.",
+  },
+  {
+    icon: Rocket,
+    title: "SaaS escalável",
+    desc: "Arquitetura multi-tenant, billing, segurança e performance desde o primeiro deploy.",
+  },
+];
+
 const services = [
-  { icon: Code2, title: "Desenvolvimento Web", desc: "Sites, portais e aplicações web rápidas, seguras e escaláveis." },
-  { icon: Layers, title: "Sistemas & SaaS", desc: "Plataformas multi-tenant, dashboards e ERPs sob medida." },
-  { icon: Bot, title: "Inteligência Artificial", desc: "Agentes, copilots e integrações com LLMs aplicados ao negócio." },
-  { icon: Workflow, title: "Automação", desc: "Fluxos, integrações com APIs e robôs que eliminam trabalho repetitivo." },
-  { icon: ShoppingBag, title: "E-commerce", desc: "Lojas e marketplaces com performance e foco em conversão." },
-  { icon: Stethoscope, title: "Saúde & Bem-estar", desc: "Soluções para clínicas, profissionais de saúde e fitness." },
+  { icon: PlugZap, title: "Consultoria & Estratégia", desc: "Apoio na adoção das nossas plataformas e em decisões de produto e tecnologia." },
+  { icon: Layers, title: "Implantação & Integrações", desc: "Conectamos nossos SaaS ao seu ecossistema, ERPs e ferramentas internas." },
+  { icon: Bot, title: "Customizações com IA", desc: "Agentes, automações e fluxos sob medida usando nossa stack de IA." },
+  { icon: LifeBuoy, title: "Suporte especializado", desc: "Time dedicado para garantir continuidade, evolução e SLA dos seus produtos." },
 ];
 
 const stats = [
-  { value: "50+", label: "Projetos entregues" },
-  { value: "99.9%", label: "Uptime médio" },
-  { value: "12+", label: "Stacks dominadas" },
-  { value: "24/7", label: "Suporte dedicado" },
-];
-
-const tech = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python", "PostgreSQL",
-  "Supabase", "AWS", "Docker", "OpenAI", "Tailwind", "TanStack",
+  { value: "2+", label: "Produtos no ar" },
+  { value: "99.9%", label: "Uptime das plataformas" },
+  { value: "100%", label: "Cloud-native" },
+  { value: "24/7", label: "Operação contínua" },
 ];
 
 const testimonials = [
   {
     quote:
-      "Entregaram em semanas o que outras empresas prometiam para meses. Time técnico excepcional.",
+      "As plataformas da VSMS resolveram problemas reais do nosso dia a dia. Produto sério e bem cuidado.",
     name: "Carla M.",
-    role: "CEO, HealthTech",
+    role: "Profissional de Educação Física",
   },
   {
     quote:
-      "A automação que construímos com a VSMS economiza horas todos os dias. ROI imediato.",
+      "Usar os produtos da VSMS é como ter um time de tecnologia interno, sem o custo de manter um.",
     name: "Rafael S.",
-    role: "COO, Logística",
+    role: "Empreendedor digital",
   },
   {
     quote:
-      "Profissionais raros: entendem negócio e código. Recomendo de olhos fechados.",
+      "Empresa orientada a produto de verdade — pensa longo prazo, evolui rápido e ouve o usuário.",
     name: "Marina A.",
-    role: "Product Lead",
+    role: "Early adopter",
   },
-];
-
-const featuredPosts = [
-  { slug: "como-ia-transforma-pmes", title: "Como a IA está transformando PMEs brasileiras", date: "12 mar 2026", tag: "Inteligência Artificial" },
-  { slug: "saas-do-zero", title: "Lançando um SaaS do zero: arquitetura e custos", date: "28 fev 2026", tag: "SaaS" },
-  { slug: "automacao-que-paga-a-conta", title: "Automação que paga a conta: 5 cases reais", date: "10 fev 2026", tag: "Automação" },
 ];
 
 function Home() {
@@ -105,28 +136,29 @@ function Home() {
           <div className="mx-auto max-w-3xl text-center animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Tecnologia sob medida. Resultado real.
+              Ecossistema VSMS — Produtos, SaaS e IA
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-              Construímos o software{" "}
-              <span className="text-gradient">que move o seu negócio</span>
+              Produtos digitais que{" "}
+              <span className="text-gradient">movem pessoas e empresas</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground md:text-lg">
-              Sistemas web, SaaS, inteligência artificial e automação criados por
-              quem entende de negócio e de código. Da ideia à produção.
+              A VSMS Solutions cria e opera plataformas SaaS, soluções de
+              inteligência artificial e ferramentas digitais escaláveis —
+              feitas para durar e evoluir junto com você.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
-                to="/contato"
+                to="/produtos"
                 className="inline-flex items-center gap-2 rounded-md bg-gradient-brand px-5 py-3 text-sm font-medium text-brand-foreground shadow-glow transition-transform hover:-translate-y-0.5"
               >
-                Iniciar um projeto <ArrowRight className="h-4 w-4" />
+                Conhecer o ecossistema <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                to="/servicos"
+                to="/contato"
                 className="inline-flex items-center gap-2 rounded-md border border-border bg-surface/60 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-surface"
               >
-                Ver serviços
+                Falar com a VSMS
               </Link>
             </div>
           </div>
@@ -143,14 +175,61 @@ function Home() {
         </div>
       </section>
 
-      {/* PROPOSTA DE VALOR */}
+      {/* ECOSSISTEMA / NOSSAS SOLUÇÕES */}
+      <section id="ecossistema" className="border-y border-border bg-surface/30">
+        <div className="mx-auto max-w-7xl px-6 py-24">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-sm font-medium text-primary">Ecossistema VSMS</p>
+              <h2 className="mt-2 text-3xl font-bold md:text-4xl">
+                Nossas <span className="text-gradient">soluções em produto</span>
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                Cada produto nasce de uma dor real, com tecnologia própria,
+                operação contínua e roadmap de longo prazo.
+              </p>
+            </div>
+            <Link to="/produtos" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+              Ver todos os produtos <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {products.map(({ icon: Icon, name, tag, status, desc }) => (
+              <article
+                key={name}
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+              >
+                <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-brand opacity-10 blur-2xl transition-opacity group-hover:opacity-30" />
+                <div className="relative">
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-brand-foreground shadow-glow">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                        status === "Disponível"
+                          ? "border-primary/40 bg-primary/10 text-primary"
+                          : "border-border bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </div>
+                  <p className="mt-5 text-xs font-medium text-primary">{tag}</p>
+                  <h3 className="mt-1 text-xl font-semibold">{name}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PILARES */}
       <section className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid gap-12 md:grid-cols-3">
-          {[
-            { icon: Zap, title: "Velocidade obsessiva", desc: "Entregas ágeis com qualidade de quem pensa em escala desde o dia 1." },
-            { icon: Shield, title: "Segurança em primeiro lugar", desc: "Boas práticas, auditoria contínua e arquitetura preparada para crescer." },
-            { icon: Cpu, title: "IA no DNA", desc: "Inteligência artificial aplicada de verdade, com foco em ROI." },
-          ].map(({ icon: Icon, title, desc }) => (
+          {pillars.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="group rounded-2xl border border-border bg-surface/60 p-6 backdrop-blur transition-all hover:border-primary/40 hover:bg-surface">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-brand-foreground shadow-glow">
                 <Icon className="h-5 w-5" />
@@ -162,25 +241,25 @@ function Home() {
         </div>
       </section>
 
-      {/* SERVIÇOS */}
+      {/* SERVIÇOS (apoio) */}
       <section className="border-y border-border bg-surface/30">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="max-w-2xl">
-            <p className="text-sm font-medium text-primary">O que fazemos</p>
+            <p className="text-sm font-medium text-primary">Serviços de apoio</p>
             <h2 className="mt-2 text-3xl font-bold md:text-4xl">
-              Soluções completas, do <span className="text-gradient">conceito ao código</span>
+              Para potencializar <span className="text-gradient">o uso dos nossos produtos</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Atendemos empresas e profissionais com tecnologia que entrega
-              resultado — sem promessa vazia.
+              Nossos serviços existem para acelerar a adoção, integração e
+              evolução das plataformas VSMS no seu negócio.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {services.map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+                className="rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40"
               >
                 <Icon className="h-6 w-6 text-primary" />
                 <h3 className="mt-4 font-semibold">{title}</h3>
@@ -191,75 +270,28 @@ function Home() {
 
           <div className="mt-10">
             <Link to="/servicos" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-              Ver todos os serviços <ArrowRight className="h-4 w-4" />
+              Ver todos os serviços de apoio <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* TECNOLOGIAS */}
-      <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="text-center">
-          <p className="text-sm font-medium text-primary">Stack moderna</p>
-          <h2 className="mt-2 text-3xl font-bold md:text-4xl">Tecnologias que dominamos</h2>
-        </div>
-        <div className="mt-10 flex flex-wrap justify-center gap-2.5">
-          {tech.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm text-muted-foreground backdrop-blur"
-            >
-              {t}
-            </span>
-          ))}
         </div>
       </section>
 
       {/* DEPOIMENTOS */}
-      <section className="border-y border-border bg-surface/30">
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium text-primary">Quem confia</p>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">Resultados que falam</h2>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <figure key={t.name} className="rounded-2xl border border-border bg-card p-6">
-                <Quote className="h-6 w-6 text-primary/70" />
-                <blockquote className="mt-3 text-sm leading-relaxed">{t.quote}</blockquote>
-                <figcaption className="mt-5 text-sm">
-                  <div className="font-medium">{t.name}</div>
-                  <div className="text-muted-foreground">{t.role}</div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* BLOG */}
       <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-primary">Conteúdo</p>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">Blog em destaque</h2>
-          </div>
-          <Link to="/blog" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-            Ver todos <ArrowRight className="h-4 w-4" />
-          </Link>
+        <div className="max-w-2xl">
+          <p className="text-sm font-medium text-primary">Quem usa</p>
+          <h2 className="mt-2 text-3xl font-bold md:text-4xl">Resultados que falam</h2>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {featuredPosts.map((p) => (
-            <Link
-              key={p.slug}
-              to="/blog/$slug"
-              params={{ slug: p.slug }}
-              className="group rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40"
-            >
-              <span className="text-xs font-medium text-primary">{p.tag}</span>
-              <h3 className="mt-2 text-lg font-semibold group-hover:text-gradient">{p.title}</h3>
-              <p className="mt-4 text-xs text-muted-foreground">{p.date}</p>
-            </Link>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {testimonials.map((t) => (
+            <figure key={t.name} className="rounded-2xl border border-border bg-card p-6">
+              <Quote className="h-6 w-6 text-primary/70" />
+              <blockquote className="mt-3 text-sm leading-relaxed">{t.quote}</blockquote>
+              <figcaption className="mt-5 text-sm">
+                <div className="font-medium">{t.name}</div>
+                <div className="text-muted-foreground">{t.role}</div>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </section>
@@ -271,18 +303,26 @@ function Home() {
           <div className="absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-gradient-brand opacity-30 blur-3xl" />
           <div className="relative">
             <h2 className="text-3xl font-bold md:text-4xl">
-              Pronto para <span className="text-gradient">acelerar seu negócio?</span>
+              Pronto para entrar no <span className="text-gradient">ecossistema VSMS?</span>
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Conte sua ideia. Em poucos dias retornamos com um plano objetivo
-              e um orçamento transparente.
+              Conheça nossos produtos, descubra qual faz sentido para você ou
+              sua empresa — e cresça com tecnologia que evolui todo dia.
             </p>
-            <Link
-              to="/contato"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-gradient-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-glow"
-            >
-              Começar agora <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/produtos"
+                className="inline-flex items-center gap-2 rounded-md bg-gradient-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-glow"
+              >
+                Explorar produtos <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/contato"
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-surface/60 px-6 py-3 text-sm font-medium backdrop-blur hover:bg-surface"
+              >
+                Falar com a equipe
+              </Link>
+            </div>
           </div>
         </div>
       </section>

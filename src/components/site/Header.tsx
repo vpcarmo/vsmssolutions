@@ -5,10 +5,10 @@ import logo from "@/assets/logo.png";
 
 const nav = [
   { to: "/", label: "Início" },
-  { to: "/sobre", label: "Sobre" },
-  { to: "/servicos", label: "Serviços" },
   { to: "/produtos", label: "Produtos" },
-  { to: "/portfolio", label: "Portfólio" },
+  { to: "/servicos", label: "Serviços" },
+  { to: "/sobre", label: "Sobre" },
+  { to: "/portfolio", label: "Cases" },
   { to: "/blog", label: "Blog" },
   { to: "/contato", label: "Contato" },
 ] as const;
