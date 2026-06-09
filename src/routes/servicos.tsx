@@ -8,9 +8,9 @@ export const Route = createFileRoute("/servicos")({
       { name: "description", content: "Consultoria, implantação, integrações, customizações com IA e suporte especializado para os produtos do ecossistema VSMS." },
       { property: "og:title", content: "Serviços de apoio — VSMS Solutions" },
       { property: "og:description", content: "Consultoria, implantação, integrações e suporte para as plataformas VSMS." },
-      { property: "og:url", content: "/servicos" },
+      { property: "og:url", content: "https://vsms.com.br/servicos" },
     ],
-    links: [{ rel: "canonical", href: "/servicos" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/servicos" }],
   }),
   component: Servicos,
 });

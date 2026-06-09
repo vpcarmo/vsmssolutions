@@ -9,9 +9,9 @@ export const Route = createFileRoute("/contato")({
       { name: "description", content: "Fale com a VSMS Solutions. WhatsApp, e-mail e formulário para iniciar seu projeto." },
       { property: "og:title", content: "Contato — VSMS Solutions" },
       { property: "og:description", content: "Vamos conversar sobre o seu projeto." },
-      { property: "og:url", content: "/contato" },
+      { property: "og:url", content: "https://vsms.com.br/contato" },
     ],
-    links: [{ rel: "canonical", href: "/contato" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/contato" }],
   }),
   component: Contato,
 });

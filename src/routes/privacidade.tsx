@@ -6,9 +6,9 @@ export const Route = createFileRoute("/privacidade")({
     meta: [
       { title: "Política de Privacidade — VSMS Solutions" },
       { name: "description", content: "Como a VSMS Solutions coleta, usa e protege os dados pessoais." },
-      { property: "og:url", content: "/privacidade" },
+      { property: "og:url", content: "https://vsms.com.br/privacidade" },
     ],
-    links: [{ rel: "canonical", href: "/privacidade" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/privacidade" }],
   }),
   component: () => (
     <LegalPage

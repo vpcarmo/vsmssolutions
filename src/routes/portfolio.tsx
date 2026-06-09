@@ -7,9 +7,9 @@ export const Route = createFileRoute("/portfolio")({
       { name: "description", content: "Cases e projetos entregues pela VSMS Solutions em diferentes setores." },
       { property: "og:title", content: "Portfólio — VSMS Solutions" },
       { property: "og:description", content: "Projetos e cases de tecnologia entregues pela VSMS." },
-      { property: "og:url", content: "/portfolio" },
+      { property: "og:url", content: "https://vsms.com.br/portfolio" },
     ],
-    links: [{ rel: "canonical", href: "/portfolio" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/portfolio" }],
   }),
   component: Portfolio,
 });
