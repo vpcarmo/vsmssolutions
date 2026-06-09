@@ -63,8 +63,10 @@ export function Header() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md text-foreground md:hidden"
           aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -72,7 +74,8 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="glass border-t border-border md:hidden">
+        <div id="mobile-nav" className="glass border-t border-border md:hidden">
+
           <nav className="mx-auto flex max-w-7xl flex-col px-6 py-3" aria-label="Mobile">
             {nav.map((item) => (
               <Link
