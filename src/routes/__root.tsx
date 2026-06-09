@@ -146,6 +146,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-gradient-brand focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-brand-foreground"
+      >
+        Pular para o conteúdo
+      </a>
       <Header />
       <main id="main" className="min-h-dvh pt-16">
         <Outlet />
@@ -154,3 +160,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
