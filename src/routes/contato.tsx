@@ -66,15 +66,16 @@ function Contato() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <Field id="name" label="Nome" required maxLength={120} />
-                  <Field id="email" label="E-mail" type="email" required maxLength={200} />
+                  <Field id="name" label="Nome" required maxLength={120} autoComplete="name" />
+                  <Field id="email" label="E-mail" type="email" required maxLength={200} autoComplete="email" />
                 </div>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <Field id="company" label="Empresa" maxLength={120} />
-                  <Field id="phone" label="Telefone / WhatsApp" maxLength={40} />
+                  <Field id="company" label="Empresa" maxLength={120} autoComplete="organization" />
+                  <Field id="phone" label="Telefone / WhatsApp" type="tel" maxLength={40} autoComplete="tel" />
                 </div>
+
                 <div>
                   <label htmlFor="subject" className="text-sm font-medium">
                     Sobre o que você quer falar?<span className="ml-0.5 text-primary">*</span>
