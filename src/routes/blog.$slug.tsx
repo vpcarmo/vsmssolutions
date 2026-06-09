@@ -19,9 +19,10 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "og:title", content: post?.title ?? "Blog VSMS" },
         { property: "og:description", content: desc },
         { property: "og:type", content: "article" },
-        { property: "og:url", content: `/blog/${params.slug}` },
+        { property: "og:url", content: `https://vsms.com.br/blog/${params.slug}` },
       ],
-      links: [{ rel: "canonical", href: `/blog/${params.slug}` }],
+      links: [{ rel: "canonical", href: `https://vsms.com.br/blog/${params.slug}` }],
+
       scripts: post
         ? [
             {
