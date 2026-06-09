@@ -78,28 +78,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "VSMS Solutions — Tecnologia que move o seu negócio" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "VSMS Solutions — Produtos digitais, SaaS e IA" },
       {
         name: "description",
         content:
-          "Desenvolvimento de sistemas, SaaS, inteligência artificial e automação para acelerar empresas e profissionais.",
+          "Empresa de tecnologia orientada a produto. Criamos e operamos plataformas SaaS, soluções de IA e ferramentas digitais próprias para pessoas e empresas.",
       },
       { name: "author", content: "VSMS Solutions" },
+      { name: "theme-color", content: "#0b0d18" },
+      { name: "format-detection", content: "telephone=no" },
       { property: "og:site_name", content: "VSMS Solutions" },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "pt_BR" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#0b0d18" },
-      { property: "og:title", content: "VSMS Solutions — Tecnologia que move o seu negócio" },
-      { name: "twitter:title", content: "VSMS Solutions — Tecnologia que move o seu negócio" },
-      { name: "description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
-      { property: "og:description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
-      { name: "twitter:description", content: "VSMS Digital Core: A modern, scalable institutional website for VSMS Solutions." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2078370-bfd9-40ba-8e05-640866589a69/id-preview-cf329f77--a59d3604-e576-43a2-9f37-2d5ebe13bdcd.lovable.app-1780910420400.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2078370-bfd9-40ba-8e05-640866589a69/id-preview-cf329f77--a59d3604-e576-43a2-9f37-2d5ebe13bdcd.lovable.app-1780910420400.png" },
+      { name: "twitter:site", content: "@vsmssolutions" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -115,12 +112,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "Organization",
           name: "VSMS Solutions",
           url: "https://vsms.com.br",
+          logo: "https://vsms.com.br/favicon.ico",
           description:
-            "Empresa de tecnologia focada em soluções digitais inteligentes: sistemas web, SaaS, IA e automação.",
+            "Empresa de tecnologia orientada a produto: SaaS próprios, IA aplicada e operação contínua de plataformas digitais.",
+          sameAs: [],
         }),
       },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
