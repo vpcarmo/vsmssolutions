@@ -32,10 +32,14 @@ export const Route = createFileRoute("/")({
         content:
           "Produtos próprios, SaaS e IA para escalar pessoas e empresas. Conheça o ecossistema VSMS.",
       },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: "https://vsms.com.br/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "https://vsms.com.br/" },
+      { rel: "preload", as: "image", href: heroBg, fetchpriority: "high" },
+    ],
   }),
+
   component: Home,
 });
 
