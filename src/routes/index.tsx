@@ -132,7 +132,9 @@ function Home() {
           height={1080}
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
           fetchPriority="high"
+          decoding="async"
         />
+
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
         <div className="absolute inset-0 grid-bg" />
 
