@@ -9,9 +9,9 @@ export const Route = createFileRoute("/contato")({
       { name: "description", content: "Fale com a VSMS Solutions. WhatsApp, e-mail e formulário para iniciar seu projeto." },
       { property: "og:title", content: "Contato — VSMS Solutions" },
       { property: "og:description", content: "Vamos conversar sobre o seu projeto." },
-      { property: "og:url", content: "/contato" },
+      { property: "og:url", content: "https://vsms.com.br/contato" },
     ],
-    links: [{ rel: "canonical", href: "/contato" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/contato" }],
   }),
   component: Contato,
 });
@@ -66,15 +66,16 @@ function Contato() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <Field id="name" label="Nome" required maxLength={120} />
-                  <Field id="email" label="E-mail" type="email" required maxLength={200} />
+                  <Field id="name" label="Nome" required maxLength={120} autoComplete="name" />
+                  <Field id="email" label="E-mail" type="email" required maxLength={200} autoComplete="email" />
                 </div>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <Field id="company" label="Empresa" maxLength={120} />
-                  <Field id="phone" label="Telefone / WhatsApp" maxLength={40} />
+                  <Field id="company" label="Empresa" maxLength={120} autoComplete="organization" />
+                  <Field id="phone" label="Telefone / WhatsApp" type="tel" maxLength={40} autoComplete="tel" />
                 </div>
+
                 <div>
                   <label htmlFor="subject" className="text-sm font-medium">
                     Sobre o que você quer falar?<span className="ml-0.5 text-primary">*</span>
@@ -136,12 +137,14 @@ function Field({
   type = "text",
   required,
   maxLength,
+  autoComplete,
 }: {
   id: string;
   label: string;
   type?: string;
   required?: boolean;
   maxLength?: number;
+  autoComplete?: string;
 }) {
   return (
     <div>
@@ -155,11 +158,13 @@ function Field({
         type={type}
         required={required}
         maxLength={maxLength}
+        autoComplete={autoComplete}
         className="mt-1.5 block w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
       />
     </div>
   );
 }
+
 
 function ContactCard({
   icon: Icon,

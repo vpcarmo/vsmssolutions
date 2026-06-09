@@ -6,9 +6,9 @@ export const Route = createFileRoute("/termos")({
     meta: [
       { title: "Termos de Uso — VSMS Solutions" },
       { name: "description", content: "Condições gerais de uso do site da VSMS Solutions." },
-      { property: "og:url", content: "/termos" },
+      { property: "og:url", content: "https://vsms.com.br/termos" },
     ],
-    links: [{ rel: "canonical", href: "/termos" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/termos" }],
   }),
   component: () => (
     <LegalPage

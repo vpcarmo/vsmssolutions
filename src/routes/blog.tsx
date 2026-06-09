@@ -8,9 +8,9 @@ export const Route = createFileRoute("/blog")({
       { name: "description", content: "Artigos sobre tecnologia, IA, SaaS, automação e transformação digital." },
       { property: "og:title", content: "Blog — VSMS Solutions" },
       { property: "og:description", content: "Conteúdo de tecnologia que vai além do hype." },
-      { property: "og:url", content: "/blog" },
+      { property: "og:url", content: "https://vsms.com.br/blog" },
     ],
-    links: [{ rel: "canonical", href: "/blog" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/blog" }],
   }),
   component: Blog,
 });

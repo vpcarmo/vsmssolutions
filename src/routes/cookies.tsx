@@ -6,9 +6,9 @@ export const Route = createFileRoute("/cookies")({
     meta: [
       { title: "Política de Cookies — VSMS Solutions" },
       { name: "description", content: "Como a VSMS Solutions utiliza cookies neste site." },
-      { property: "og:url", content: "/cookies" },
+      { property: "og:url", content: "https://vsms.com.br/cookies" },
     ],
-    links: [{ rel: "canonical", href: "/cookies" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/cookies" }],
   }),
   component: () => (
     <LegalPage

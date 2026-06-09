@@ -8,9 +8,9 @@ export const Route = createFileRoute("/produtos")({
       { name: "description", content: "Conheça o ecossistema VSMS: Personal Virtual, SuperOfertas e novos SaaS em desenvolvimento. Produtos digitais e plataformas de IA." },
       { property: "og:title", content: "Ecossistema VSMS — Produtos digitais e SaaS" },
       { property: "og:description", content: "Produtos próprios, SaaS e soluções de IA criadas e operadas pela VSMS." },
-      { property: "og:url", content: "/produtos" },
+      { property: "og:url", content: "https://vsms.com.br/produtos" },
     ],
-    links: [{ rel: "canonical", href: "/produtos" }],
+    links: [{ rel: "canonical", href: "https://vsms.com.br/produtos" }],
   }),
   component: Produtos,
 });

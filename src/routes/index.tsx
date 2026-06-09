@@ -32,10 +32,14 @@ export const Route = createFileRoute("/")({
         content:
           "Produtos próprios, SaaS e IA para escalar pessoas e empresas. Conheça o ecossistema VSMS.",
       },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: "https://vsms.com.br/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "https://vsms.com.br/" },
+      { rel: "preload", as: "image", href: heroBg, fetchpriority: "high" },
+    ],
   }),
+
   component: Home,
 });
 
@@ -128,7 +132,9 @@ function Home() {
           height={1080}
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
           fetchPriority="high"
+          decoding="async"
         />
+
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
         <div className="absolute inset-0 grid-bg" />
 
