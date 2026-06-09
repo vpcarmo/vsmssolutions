@@ -123,6 +123,9 @@
     background: color-mix(in oklab, var(--brand) 40%, transparent);
     color: var(--foreground);
   }
+   #lovable-badge {
+    display: none !important;
+  }
 }
 
 @utility text-gradient {
