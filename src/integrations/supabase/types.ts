@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      posts: {
+        Row: {
+          content: string[]
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          product_id: string
+          published_at: string | null
+          reading_time: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          status: Database["public"]["Enums"]["post_status"]
+          tag: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string[]
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt: string
+          id?: string
+          product_id: string
+          published_at?: string | null
+          reading_time?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["post_status"]
+          tag?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string[]
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          product_id?: string
+          published_at?: string | null
+          reading_time?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["post_status"]
+          tag?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          primary_domain: string | null
+          settings: Json
+          slug: string
+          status: Database["public"]["Enums"]["product_status"]
+          type: Database["public"]["Enums"]["product_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          primary_domain?: string | null
+          settings?: Json
+          slug: string
+          status?: Database["public"]["Enums"]["product_status"]
+          type?: Database["public"]["Enums"]["product_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          primary_domain?: string | null
+          settings?: Json
+          slug?: string
+          status?: Database["public"]["Enums"]["product_status"]
+          type?: Database["public"]["Enums"]["product_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +123,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      post_status: "draft" | "published" | "scheduled" | "archived"
+      product_status: "active" | "inactive" | "archived"
+      product_type: "site" | "saas" | "ai_app"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +252,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      post_status: ["draft", "published", "scheduled", "archived"],
+      product_status: ["active", "inactive", "archived"],
+      product_type: ["site", "saas", "ai_app"],
+    },
   },
 } as const
