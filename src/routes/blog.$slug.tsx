@@ -1,22 +1,17 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { getPostBySlug, listPublishedPosts } from "@/lib/posts.functions";
-import { formatPostDate, type Post } from "@/lib/posts";
+import { getPost, posts } from "@/lib/posts";
 
 export const Route = createFileRoute("/blog/$slug")({
-  loader: async ({ params }) => {
-    const [post, all] = await Promise.all([
-      getPostBySlug({ data: { slug: params.slug } }),
-      listPublishedPosts(),
-    ]);
+  loader: ({ params }) => {
+    const post = getPost(params.slug);
     if (!post) throw notFound();
-    const related = all.filter((p) => p.slug !== post.slug).slice(0, 2);
-    return { post, related };
+    return { post };
   },
   head: ({ params, loaderData }) => {
     const post = loaderData?.post;
-    const title = post ? `${post.seoTitle ?? post.title} — VSMS Blog` : "Post — VSMS Blog";
-    const desc = post?.seoDescription ?? post?.excerpt ?? "Artigo do blog da VSMS Solutions.";
+    const title = post ? `${post.title} — VSMS Blog` : "Post — VSMS Blog";
+    const desc = post?.excerpt ?? "Artigo do blog da VSMS Solutions.";
     return {
       meta: [
         { title },
@@ -25,9 +20,6 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "og:description", content: desc },
         { property: "og:type", content: "article" },
         { property: "og:url", content: `https://vsms.com.br/blog/${params.slug}` },
-        ...(post?.coverImageUrl
-          ? [{ property: "og:image", content: post.coverImageUrl }]
-          : []),
       ],
       links: [{ rel: "canonical", href: `https://vsms.com.br/blog/${params.slug}` }],
 
@@ -39,33 +31,8 @@ export const Route = createFileRoute("/blog/$slug")({
                 "@context": "https://schema.org",
                 "@type": "Article",
                 headline: post.title,
-                description: post.excerpt,
-                datePublished: post.publishedAt,
+                datePublished: post.date,
                 author: { "@type": "Organization", name: "VSMS Solutions" },
-                publisher: {
-                  "@type": "Organization",
-                  name: "VSMS Solutions",
-                  url: "https://vsms.com.br",
-                },
-                mainEntityOfPage: `https://vsms.com.br/blog/${params.slug}`,
-                ...(post.coverImageUrl ? { image: post.coverImageUrl } : {}),
-              }),
-            },
-            {
-              type: "application/ld+json",
-              children: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Início", item: "https://vsms.com.br/" },
-                  { "@type": "ListItem", position: 2, name: "Blog", item: "https://vsms.com.br/blog" },
-                  {
-                    "@type": "ListItem",
-                    position: 3,
-                    name: post.title,
-                    item: `https://vsms.com.br/blog/${params.slug}`,
-                  },
-                ],
               }),
             },
           ]
@@ -92,7 +59,8 @@ export const Route = createFileRoute("/blog/$slug")({
 });
 
 function PostPage() {
-  const { post, related } = Route.useLoaderData() as { post: Post; related: Post[] };
+  const { post } = Route.useLoaderData();
+  const related = posts.filter((p) => p.slug !== post.slug).slice(0, 2);
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-20">
@@ -104,7 +72,7 @@ function PostPage() {
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="font-medium text-primary">{post.tag}</span>
           <span>•</span>
-          <span>{formatPostDate(post.publishedAt)}</span>
+          <span>{post.date}</span>
           <span>•</span>
           <span>{post.readingTime} de leitura</span>
         </div>
@@ -113,7 +81,7 @@ function PostPage() {
       </header>
 
       <div className="mt-10 space-y-5 text-[15px] leading-relaxed text-muted-foreground">
-        {post.content.map((para, i) => (
+        {post.content.map((para: string, i: number) => (
           <p key={i}>{para}</p>
         ))}
       </div>
