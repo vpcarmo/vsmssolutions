@@ -78,6 +78,17 @@ function AdminHome() {
           Painel administrativo centralizado do ecossistema VSMS.
         </p>
       </header>
+      {hasNoRole && (
+        <section className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-5">
+          <h2 className="font-semibold">Inicializar painel</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Nenhum papel atribuído à sua conta. Se ainda não existe um super_admin no sistema,
+            torne-se um agora para continuar.
+          </p>
+          <Button className="mt-3" size="sm" onClick={handleBootstrap}>Tornar-me super_admin</Button>
+          {bootstrapMsg && <p className="mt-2 text-sm">{bootstrapMsg}</p>}
+        </section>
+      )}
       <section className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {cards.map((c) => (
           <div key={c.label} className="rounded-xl border border-border bg-card p-5">
