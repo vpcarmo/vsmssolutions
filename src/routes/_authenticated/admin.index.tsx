@@ -11,6 +11,21 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminHome() {
+  const router = useRouter();
+  const bootstrap = useServerFn(bootstrapSuperAdmin);
+  const [bootstrapMsg, setBootstrapMsg] = useState<string | null>(null);
+
+  const { data: rolesData, refetch: refetchRoles } = useQuery({
+    queryKey: ["my-roles"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return [];
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
+      return data?.map((r) => r.role) ?? [];
+    },
+  });
+  const hasNoRole = rolesData !== undefined && rolesData.length === 0;
+
   const { data } = useQuery({
     queryKey: ["admin-overview"],
     queryFn: async () => {
@@ -32,6 +47,19 @@ function AdminHome() {
       };
     },
   });
+
+  async function handleBootstrap() {
+    setBootstrapMsg(null);
+    try {
+      await bootstrap({});
+      setBootstrapMsg("Você agora é super_admin. Recarregando...");
+      await refetchRoles();
+      router.invalidate();
+    } catch (e) {
+      setBootstrapMsg(e instanceof Error ? e.message : "Erro ao conceder super_admin.");
+    }
+  }
+
 
   const cards = [
     { label: "Produtos", value: data?.products, href: "/admin/produtos" },
