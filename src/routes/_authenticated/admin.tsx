@@ -9,7 +9,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminShell,
 });
 
-const NAV = [
+type NavItem = { to: string; label: string; end?: boolean };
+const NAV: NavItem[] = [
   { to: "/admin", label: "Visão geral", end: true },
   { to: "/admin/produtos", label: "Produtos" },
   { to: "/admin/paginas", label: "Páginas" },
@@ -22,7 +23,7 @@ const NAV = [
   { to: "/admin/usuarios", label: "Usuários" },
   { to: "/admin/auditoria", label: "Auditoria" },
   { to: "/admin/configuracoes", label: "Configurações" },
-] as const;
+];
 
 function AdminShell() {
   const navigate = useNavigate();
