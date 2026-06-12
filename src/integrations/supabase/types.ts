@@ -373,54 +373,85 @@ export type Database = {
       }
       pages: {
         Row: {
+          archived_at: string | null
+          author_id: string | null
+          categories: string[]
           content: Json
+          content_type: string
           created_at: string
           created_by: string | null
+          excerpt: string | null
           id: string
           og_image_url: string | null
+          parent_id: string | null
           product_id: string
           published_at: string | null
           seo_description: string | null
           seo_title: string | null
           slug: string
           status: Database["public"]["Enums"]["page_status"]
+          tags: string[]
+          template: string
           tenant_id: string
           title: string
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          author_id?: string | null
+          categories?: string[]
           content?: Json
+          content_type?: string
           created_at?: string
           created_by?: string | null
+          excerpt?: string | null
           id?: string
           og_image_url?: string | null
+          parent_id?: string | null
           product_id: string
           published_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug: string
           status?: Database["public"]["Enums"]["page_status"]
+          tags?: string[]
+          template?: string
           tenant_id?: string
           title: string
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          author_id?: string | null
+          categories?: string[]
           content?: Json
+          content_type?: string
           created_at?: string
           created_by?: string | null
+          excerpt?: string | null
           id?: string
           og_image_url?: string | null
+          parent_id?: string | null
           product_id?: string
           published_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["page_status"]
+          tags?: string[]
+          template?: string
           tenant_id?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "pages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pages_product_id_fkey"
             columns: ["product_id"]
