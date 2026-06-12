@@ -120,7 +120,7 @@ export const updateProduct = createServerFn({ method: "POST" })
       .from("products").select("*").eq("id", data.id).maybeSingle();
     const { data: row, error } = await context.supabase
       .from("products")
-      .update(data.patch)
+      .update(data.patch as never)
       .eq("id", data.id)
       .select("*")
       .single();
