@@ -180,7 +180,7 @@ export const seoOverview = createServerFn({ method: "GET" })
     let noindexed = 0;
     const pagesWithoutSeo: any[] = [];
     for (const p of allPages) {
-      const s = pageSeoByResource.get(p.id);
+      const s = pageSeoByResource.get(p.id) as any;
       if (s) {
         configured++;
         if (!s.title) missingTitle++;
