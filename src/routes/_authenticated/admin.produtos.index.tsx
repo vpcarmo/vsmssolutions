@@ -30,7 +30,7 @@ import {
   setProductStatus,
 } from "@/lib/admin/products.functions";
 
-export const Route = createFileRoute("/_authenticated/admin/produtos")({
+export const Route = createFileRoute("/_authenticated/admin/produtos/")({
   head: () => ({ meta: [{ title: "Produtos — VSMS Admin" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: ProdutosPage,
 });

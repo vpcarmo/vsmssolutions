@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { createPage, listPages, setPageStatus, type ContentType, type PageStatus } from "@/lib/admin/pages.functions";
 import { listProducts } from "@/lib/admin/products.functions";
 
-export const Route = createFileRoute("/_authenticated/admin/paginas")({
+export const Route = createFileRoute("/_authenticated/admin/paginas/")({
   head: () => ({ meta: [{ title: "Páginas — VSMS Admin" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: PaginasPage,
 });
