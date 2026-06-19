@@ -41,7 +41,7 @@ export const listSeo = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { resource_type?: SeoResourceType } | undefined) => d ?? {})
   .handler(async ({ data, context }) => {
-    let q = context.supabase
+    let q = (context.supabase as any)
       .from("seo_meta")
       .select("*")
       .order("updated_at", { ascending: false });
@@ -58,7 +58,7 @@ export const getSeoByResource = createServerFn({ method: "GET" })
     return d;
   })
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await (context.supabase as any)
       .from("seo_meta")
       .select("*")
       .eq("resource_type", data.resource_type)
@@ -84,7 +84,7 @@ export const upsertSeo = createServerFn({ method: "POST" })
     };
     const tbl = tableMap[data.resource_type];
     if (tbl) {
-      const { data: parent } = await context.supabase
+      const { data: parent } = await (context.supabase as any)
         .from(tbl)
         .select("tenant_id")
         .eq("id", data.resource_id)
@@ -92,11 +92,11 @@ export const upsertSeo = createServerFn({ method: "POST" })
       tenantId = parent?.tenant_id ?? null;
     }
     if (!tenantId) {
-      const { data: t } = await context.supabase.rpc("current_tenant_id");
+      const { data: t } = await (context.supabase as any).rpc("current_tenant_id");
       tenantId = t as string;
     }
 
-    const { data: existing } = await context.supabase
+    const { data: existing } = await (context.supabase as any)
       .from("seo_meta")
       .select("*")
       .eq("resource_type", data.resource_type)
@@ -120,7 +120,7 @@ export const upsertSeo = createServerFn({ method: "POST" })
       json_ld: data.json_ld ?? null,
     };
 
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await (context.supabase as any)
       .from("seo_meta")
       .upsert(payload, { onConflict: "resource_type,resource_id" })
       .select("*")
@@ -128,7 +128,7 @@ export const upsertSeo = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await logAudit({
-      supabase: context.supabase,
+      supabase: (context.supabase as any),
       userId: context.userId,
       tenantId,
       action: existing ? "seo.update" : "seo.create",
@@ -146,13 +146,13 @@ export const deleteSeo = createServerFn({ method: "POST" })
     return d;
   })
   .handler(async ({ data, context }) => {
-    const { data: existing } = await context.supabase
+    const { data: existing } = await (context.supabase as any)
       .from("seo_meta").select("*").eq("id", data.id).maybeSingle();
     if (!existing) throw new Error("Registro não encontrado");
-    const { error } = await context.supabase.from("seo_meta").delete().eq("id", data.id);
+    const { error } = await (context.supabase as any).from("seo_meta").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     await logAudit({
-      supabase: context.supabase,
+      supabase: (context.supabase as any),
       userId: context.userId,
       tenantId: existing.tenant_id,
       action: "seo.delete",
@@ -166,8 +166,8 @@ export const seoOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const [{ data: pages }, { data: seos }] = await Promise.all([
-      context.supabase.from("pages").select("id, title, status, product_id"),
-      context.supabase.from("seo_meta").select("resource_type, resource_id, title, description, noindex"),
+      (context.supabase as any).from("pages").select("id, title, status, product_id"),
+      (context.supabase as any).from("seo_meta").select("resource_type, resource_id, title, description, noindex"),
     ]);
     const pageSeoByResource = new Map(
       (seos ?? []).filter((s: any) => s.resource_type === "page").map((s: any) => [s.resource_id, s]),
