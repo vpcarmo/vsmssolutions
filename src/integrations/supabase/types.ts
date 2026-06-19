@@ -708,10 +708,15 @@ export type Database = {
           description: string | null
           id: string
           json_ld: Json | null
+          nofollow: boolean
           noindex: boolean
+          og_description: string | null
           og_image_url: string | null
+          og_title: string | null
           resource_id: string
           resource_type: string
+          robots: string | null
+          schema_type: string | null
           tenant_id: string
           title: string | null
           updated_at: string
@@ -722,10 +727,15 @@ export type Database = {
           description?: string | null
           id?: string
           json_ld?: Json | null
+          nofollow?: boolean
           noindex?: boolean
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           resource_id: string
           resource_type: string
+          robots?: string | null
+          schema_type?: string | null
           tenant_id?: string
           title?: string | null
           updated_at?: string
@@ -736,10 +746,15 @@ export type Database = {
           description?: string | null
           id?: string
           json_ld?: Json | null
+          nofollow?: boolean
           noindex?: boolean
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           resource_id?: string
           resource_type?: string
+          robots?: string | null
+          schema_type?: string | null
           tenant_id?: string
           title?: string | null
           updated_at?: string
