@@ -36,10 +36,12 @@ import { Route as AuthenticatedAdminFeatureFlagsRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/admin.configuracoes'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
+import { Route as AuthenticatedAdminSeoIndexRouteImport } from './routes/_authenticated/admin.seo.index'
 import { Route as AuthenticatedAdminProdutosIndexRouteImport } from './routes/_authenticated/admin.produtos.index'
 import { Route as AuthenticatedAdminPaginasIndexRouteImport } from './routes/_authenticated/admin.paginas.index'
 import { Route as AuthenticatedAdminProdutosIdRouteImport } from './routes/_authenticated/admin.produtos.$id'
 import { Route as AuthenticatedAdminPaginasIdRouteImport } from './routes/_authenticated/admin.paginas.$id'
+import { Route as AuthenticatedAdminSeoResourceTypeResourceIdRouteImport } from './routes/_authenticated/admin.seo.$resourceType.$resourceId'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -182,6 +184,12 @@ const AuthenticatedAdminAuditoriaRoute =
     path: '/auditoria',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSeoIndexRoute =
+  AuthenticatedAdminSeoIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminSeoRoute,
+  } as any)
 const AuthenticatedAdminProdutosIndexRoute =
   AuthenticatedAdminProdutosIndexRouteImport.update({
     id: '/',
@@ -205,6 +213,12 @@ const AuthenticatedAdminPaginasIdRoute =
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthenticatedAdminPaginasRoute,
+  } as any)
+const AuthenticatedAdminSeoResourceTypeResourceIdRoute =
+  AuthenticatedAdminSeoResourceTypeResourceIdRouteImport.update({
+    id: '/$resourceType/$resourceId',
+    path: '/$resourceType/$resourceId',
+    getParentRoute: () => AuthenticatedAdminSeoRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -231,13 +245,15 @@ export interface FileRoutesByFullPath {
   '/admin/midia': typeof AuthenticatedAdminMidiaRoute
   '/admin/paginas': typeof AuthenticatedAdminPaginasRouteWithChildren
   '/admin/produtos': typeof AuthenticatedAdminProdutosRouteWithChildren
-  '/admin/seo': typeof AuthenticatedAdminSeoRoute
+  '/admin/seo': typeof AuthenticatedAdminSeoRouteWithChildren
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/paginas/$id': typeof AuthenticatedAdminPaginasIdRoute
   '/admin/produtos/$id': typeof AuthenticatedAdminProdutosIdRoute
   '/admin/paginas/': typeof AuthenticatedAdminPaginasIndexRoute
   '/admin/produtos/': typeof AuthenticatedAdminProdutosIndexRoute
+  '/admin/seo/': typeof AuthenticatedAdminSeoIndexRoute
+  '/admin/seo/$resourceType/$resourceId': typeof AuthenticatedAdminSeoResourceTypeResourceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -260,13 +276,14 @@ export interface FileRoutesByTo {
   '/admin/formularios': typeof AuthenticatedAdminFormulariosRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/midia': typeof AuthenticatedAdminMidiaRoute
-  '/admin/seo': typeof AuthenticatedAdminSeoRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/paginas/$id': typeof AuthenticatedAdminPaginasIdRoute
   '/admin/produtos/$id': typeof AuthenticatedAdminProdutosIdRoute
   '/admin/paginas': typeof AuthenticatedAdminPaginasIndexRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosIndexRoute
+  '/admin/seo': typeof AuthenticatedAdminSeoIndexRoute
+  '/admin/seo/$resourceType/$resourceId': typeof AuthenticatedAdminSeoResourceTypeResourceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -294,13 +311,15 @@ export interface FileRoutesById {
   '/_authenticated/admin/midia': typeof AuthenticatedAdminMidiaRoute
   '/_authenticated/admin/paginas': typeof AuthenticatedAdminPaginasRouteWithChildren
   '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRouteWithChildren
-  '/_authenticated/admin/seo': typeof AuthenticatedAdminSeoRoute
+  '/_authenticated/admin/seo': typeof AuthenticatedAdminSeoRouteWithChildren
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/paginas/$id': typeof AuthenticatedAdminPaginasIdRoute
   '/_authenticated/admin/produtos/$id': typeof AuthenticatedAdminProdutosIdRoute
   '/_authenticated/admin/paginas/': typeof AuthenticatedAdminPaginasIndexRoute
   '/_authenticated/admin/produtos/': typeof AuthenticatedAdminProdutosIndexRoute
+  '/_authenticated/admin/seo/': typeof AuthenticatedAdminSeoIndexRoute
+  '/_authenticated/admin/seo/$resourceType/$resourceId': typeof AuthenticatedAdminSeoResourceTypeResourceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -335,6 +354,8 @@ export interface FileRouteTypes {
     | '/admin/produtos/$id'
     | '/admin/paginas/'
     | '/admin/produtos/'
+    | '/admin/seo/'
+    | '/admin/seo/$resourceType/$resourceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -357,13 +378,14 @@ export interface FileRouteTypes {
     | '/admin/formularios'
     | '/admin/leads'
     | '/admin/midia'
-    | '/admin/seo'
     | '/admin/usuarios'
     | '/admin'
     | '/admin/paginas/$id'
     | '/admin/produtos/$id'
     | '/admin/paginas'
     | '/admin/produtos'
+    | '/admin/seo'
+    | '/admin/seo/$resourceType/$resourceId'
   id:
     | '__root__'
     | '/'
@@ -397,6 +419,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/produtos/$id'
     | '/_authenticated/admin/paginas/'
     | '/_authenticated/admin/produtos/'
+    | '/_authenticated/admin/seo/'
+    | '/_authenticated/admin/seo/$resourceType/$resourceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -606,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/seo/': {
+      id: '/_authenticated/admin/seo/'
+      path: '/'
+      fullPath: '/admin/seo/'
+      preLoaderRoute: typeof AuthenticatedAdminSeoIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminSeoRoute
+    }
     '/_authenticated/admin/produtos/': {
       id: '/_authenticated/admin/produtos/'
       path: '/'
@@ -633,6 +664,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/paginas/$id'
       preLoaderRoute: typeof AuthenticatedAdminPaginasIdRouteImport
       parentRoute: typeof AuthenticatedAdminPaginasRoute
+    }
+    '/_authenticated/admin/seo/$resourceType/$resourceId': {
+      id: '/_authenticated/admin/seo/$resourceType/$resourceId'
+      path: '/$resourceType/$resourceId'
+      fullPath: '/admin/seo/$resourceType/$resourceId'
+      preLoaderRoute: typeof AuthenticatedAdminSeoResourceTypeResourceIdRouteImport
+      parentRoute: typeof AuthenticatedAdminSeoRoute
     }
   }
 }
@@ -669,6 +707,22 @@ const AuthenticatedAdminProdutosRouteWithChildren =
     AuthenticatedAdminProdutosRouteChildren,
   )
 
+interface AuthenticatedAdminSeoRouteChildren {
+  AuthenticatedAdminSeoIndexRoute: typeof AuthenticatedAdminSeoIndexRoute
+  AuthenticatedAdminSeoResourceTypeResourceIdRoute: typeof AuthenticatedAdminSeoResourceTypeResourceIdRoute
+}
+
+const AuthenticatedAdminSeoRouteChildren: AuthenticatedAdminSeoRouteChildren = {
+  AuthenticatedAdminSeoIndexRoute: AuthenticatedAdminSeoIndexRoute,
+  AuthenticatedAdminSeoResourceTypeResourceIdRoute:
+    AuthenticatedAdminSeoResourceTypeResourceIdRoute,
+}
+
+const AuthenticatedAdminSeoRouteWithChildren =
+  AuthenticatedAdminSeoRoute._addFileChildren(
+    AuthenticatedAdminSeoRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
@@ -679,7 +733,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminMidiaRoute: typeof AuthenticatedAdminMidiaRoute
   AuthenticatedAdminPaginasRoute: typeof AuthenticatedAdminPaginasRouteWithChildren
   AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRouteWithChildren
-  AuthenticatedAdminSeoRoute: typeof AuthenticatedAdminSeoRoute
+  AuthenticatedAdminSeoRoute: typeof AuthenticatedAdminSeoRouteWithChildren
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -694,7 +748,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminMidiaRoute: AuthenticatedAdminMidiaRoute,
   AuthenticatedAdminPaginasRoute: AuthenticatedAdminPaginasRouteWithChildren,
   AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRouteWithChildren,
-  AuthenticatedAdminSeoRoute: AuthenticatedAdminSeoRoute,
+  AuthenticatedAdminSeoRoute: AuthenticatedAdminSeoRouteWithChildren,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
