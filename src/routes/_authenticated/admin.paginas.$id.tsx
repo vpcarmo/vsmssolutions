@@ -198,8 +198,13 @@ function EditPage() {
           <Input id="og" value={form.og_image_url} onChange={(e) => setForm({ ...form, og_image_url: e.target.value })} />
         </div>
         <p className="text-xs text-muted-foreground">
-          Metadados extras (canonical, JSON-LD, noindex) usam a tabela <code>seo_meta</code> polimórfica e serão expostos no módulo SEO.
+          Para canonical, Open Graph completo, robots, JSON-LD e schema type use o módulo SEO polimórfico.
         </p>
+        <Button asChild variant="outline" size="sm" className="w-fit">
+          <Link to="/admin/seo/$resourceType/$resourceId" params={{ resourceType: "page", resourceId: id }}>
+            Abrir SEO avançado
+          </Link>
+        </Button>
       </section>
 
       <div className="flex justify-end gap-2">
