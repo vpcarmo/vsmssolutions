@@ -27,6 +27,8 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminSeoRouteImport } from './routes/_authenticated/admin.seo'
+import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin.produtos'
+import { Route as AuthenticatedAdminPaginasRouteImport } from './routes/_authenticated/admin.paginas'
 import { Route as AuthenticatedAdminMidiaRouteImport } from './routes/_authenticated/admin.midia'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated/admin.leads'
 import { Route as AuthenticatedAdminFormulariosRouteImport } from './routes/_authenticated/admin.formularios'
@@ -129,6 +131,18 @@ const AuthenticatedAdminSeoRoute = AuthenticatedAdminSeoRouteImport.update({
   path: '/seo',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminProdutosRoute =
+  AuthenticatedAdminProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPaginasRoute =
+  AuthenticatedAdminPaginasRouteImport.update({
+    id: '/paginas',
+    path: '/paginas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminMidiaRoute = AuthenticatedAdminMidiaRouteImport.update({
   id: '/midia',
   path: '/midia',
@@ -170,27 +184,27 @@ const AuthenticatedAdminAuditoriaRoute =
   } as any)
 const AuthenticatedAdminProdutosIndexRoute =
   AuthenticatedAdminProdutosIndexRouteImport.update({
-    id: '/produtos/',
-    path: '/produtos/',
-    getParentRoute: () => AuthenticatedAdminRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminProdutosRoute,
   } as any)
 const AuthenticatedAdminPaginasIndexRoute =
   AuthenticatedAdminPaginasIndexRouteImport.update({
-    id: '/paginas/',
-    path: '/paginas/',
-    getParentRoute: () => AuthenticatedAdminRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminPaginasRoute,
   } as any)
 const AuthenticatedAdminProdutosIdRoute =
   AuthenticatedAdminProdutosIdRouteImport.update({
-    id: '/produtos/$id',
-    path: '/produtos/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminProdutosRoute,
   } as any)
 const AuthenticatedAdminPaginasIdRoute =
   AuthenticatedAdminPaginasIdRouteImport.update({
-    id: '/paginas/$id',
-    path: '/paginas/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminPaginasRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -215,6 +229,8 @@ export interface FileRoutesByFullPath {
   '/admin/formularios': typeof AuthenticatedAdminFormulariosRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/midia': typeof AuthenticatedAdminMidiaRoute
+  '/admin/paginas': typeof AuthenticatedAdminPaginasRouteWithChildren
+  '/admin/produtos': typeof AuthenticatedAdminProdutosRouteWithChildren
   '/admin/seo': typeof AuthenticatedAdminSeoRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -276,6 +292,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/formularios': typeof AuthenticatedAdminFormulariosRoute
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/midia': typeof AuthenticatedAdminMidiaRoute
+  '/_authenticated/admin/paginas': typeof AuthenticatedAdminPaginasRouteWithChildren
+  '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRouteWithChildren
   '/_authenticated/admin/seo': typeof AuthenticatedAdminSeoRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -308,6 +326,8 @@ export interface FileRouteTypes {
     | '/admin/formularios'
     | '/admin/leads'
     | '/admin/midia'
+    | '/admin/paginas'
+    | '/admin/produtos'
     | '/admin/seo'
     | '/admin/usuarios'
     | '/admin/'
@@ -368,6 +388,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/formularios'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/midia'
+    | '/_authenticated/admin/paginas'
+    | '/_authenticated/admin/produtos'
     | '/_authenticated/admin/seo'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/admin/'
@@ -521,6 +543,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSeoRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/produtos': {
+      id: '/_authenticated/admin/produtos'
+      path: '/produtos'
+      fullPath: '/admin/produtos'
+      preLoaderRoute: typeof AuthenticatedAdminProdutosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/paginas': {
+      id: '/_authenticated/admin/paginas'
+      path: '/paginas'
+      fullPath: '/admin/paginas'
+      preLoaderRoute: typeof AuthenticatedAdminPaginasRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/midia': {
       id: '/_authenticated/admin/midia'
       path: '/midia'
@@ -572,34 +608,66 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin/produtos/': {
       id: '/_authenticated/admin/produtos/'
-      path: '/produtos'
+      path: '/'
       fullPath: '/admin/produtos/'
       preLoaderRoute: typeof AuthenticatedAdminProdutosIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+      parentRoute: typeof AuthenticatedAdminProdutosRoute
     }
     '/_authenticated/admin/paginas/': {
       id: '/_authenticated/admin/paginas/'
-      path: '/paginas'
+      path: '/'
       fullPath: '/admin/paginas/'
       preLoaderRoute: typeof AuthenticatedAdminPaginasIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+      parentRoute: typeof AuthenticatedAdminPaginasRoute
     }
     '/_authenticated/admin/produtos/$id': {
       id: '/_authenticated/admin/produtos/$id'
-      path: '/produtos/$id'
+      path: '/$id'
       fullPath: '/admin/produtos/$id'
       preLoaderRoute: typeof AuthenticatedAdminProdutosIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+      parentRoute: typeof AuthenticatedAdminProdutosRoute
     }
     '/_authenticated/admin/paginas/$id': {
       id: '/_authenticated/admin/paginas/$id'
-      path: '/paginas/$id'
+      path: '/$id'
       fullPath: '/admin/paginas/$id'
       preLoaderRoute: typeof AuthenticatedAdminPaginasIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+      parentRoute: typeof AuthenticatedAdminPaginasRoute
     }
   }
 }
+
+interface AuthenticatedAdminPaginasRouteChildren {
+  AuthenticatedAdminPaginasIdRoute: typeof AuthenticatedAdminPaginasIdRoute
+  AuthenticatedAdminPaginasIndexRoute: typeof AuthenticatedAdminPaginasIndexRoute
+}
+
+const AuthenticatedAdminPaginasRouteChildren: AuthenticatedAdminPaginasRouteChildren =
+  {
+    AuthenticatedAdminPaginasIdRoute: AuthenticatedAdminPaginasIdRoute,
+    AuthenticatedAdminPaginasIndexRoute: AuthenticatedAdminPaginasIndexRoute,
+  }
+
+const AuthenticatedAdminPaginasRouteWithChildren =
+  AuthenticatedAdminPaginasRoute._addFileChildren(
+    AuthenticatedAdminPaginasRouteChildren,
+  )
+
+interface AuthenticatedAdminProdutosRouteChildren {
+  AuthenticatedAdminProdutosIdRoute: typeof AuthenticatedAdminProdutosIdRoute
+  AuthenticatedAdminProdutosIndexRoute: typeof AuthenticatedAdminProdutosIndexRoute
+}
+
+const AuthenticatedAdminProdutosRouteChildren: AuthenticatedAdminProdutosRouteChildren =
+  {
+    AuthenticatedAdminProdutosIdRoute: AuthenticatedAdminProdutosIdRoute,
+    AuthenticatedAdminProdutosIndexRoute: AuthenticatedAdminProdutosIndexRoute,
+  }
+
+const AuthenticatedAdminProdutosRouteWithChildren =
+  AuthenticatedAdminProdutosRoute._addFileChildren(
+    AuthenticatedAdminProdutosRouteChildren,
+  )
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
@@ -609,13 +677,11 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminFormulariosRoute: typeof AuthenticatedAdminFormulariosRoute
   AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRoute
   AuthenticatedAdminMidiaRoute: typeof AuthenticatedAdminMidiaRoute
+  AuthenticatedAdminPaginasRoute: typeof AuthenticatedAdminPaginasRouteWithChildren
+  AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRouteWithChildren
   AuthenticatedAdminSeoRoute: typeof AuthenticatedAdminSeoRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
-  AuthenticatedAdminPaginasIdRoute: typeof AuthenticatedAdminPaginasIdRoute
-  AuthenticatedAdminProdutosIdRoute: typeof AuthenticatedAdminProdutosIdRoute
-  AuthenticatedAdminPaginasIndexRoute: typeof AuthenticatedAdminPaginasIndexRoute
-  AuthenticatedAdminProdutosIndexRoute: typeof AuthenticatedAdminProdutosIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -626,13 +692,11 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminFormulariosRoute: AuthenticatedAdminFormulariosRoute,
   AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRoute,
   AuthenticatedAdminMidiaRoute: AuthenticatedAdminMidiaRoute,
+  AuthenticatedAdminPaginasRoute: AuthenticatedAdminPaginasRouteWithChildren,
+  AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRouteWithChildren,
   AuthenticatedAdminSeoRoute: AuthenticatedAdminSeoRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-  AuthenticatedAdminPaginasIdRoute: AuthenticatedAdminPaginasIdRoute,
-  AuthenticatedAdminProdutosIdRoute: AuthenticatedAdminProdutosIdRoute,
-  AuthenticatedAdminPaginasIndexRoute: AuthenticatedAdminPaginasIndexRoute,
-  AuthenticatedAdminProdutosIndexRoute: AuthenticatedAdminProdutosIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
