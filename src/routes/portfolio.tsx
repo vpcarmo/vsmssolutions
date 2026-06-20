@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicPage } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -24,6 +26,14 @@ const cases = [
 ];
 
 function Portfolio() {
+  const { data: page } = useQuery({
+    queryKey: ["page", "portfolio"],
+    queryFn: () => getPublicPage({ data: { slug: "portfolio" } }),
+    staleTime: 60_000,
+  });
+  const title = page?.title ?? "Projetos que geram resultado";
+  const intro = page?.excerpt ?? "Uma seleção de cases reais entregues em diferentes segmentos.";
+
   return (
     <>
       <section className="relative overflow-hidden border-b border-border">
@@ -31,12 +41,8 @@ function Portfolio() {
         <div className="absolute -top-32 left-1/2 h-64 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <p className="text-sm font-medium text-primary">Portfólio</p>
-          <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-            Projetos que <span className="text-gradient">geram resultado</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Uma seleção de cases reais entregues em diferentes segmentos.
-          </p>
+          <h1 className="mt-3 text-4xl font-bold md:text-6xl">{title}</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">{intro}</p>
         </div>
       </section>
 

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle2 } from "lucide-react";
+import { getPublicPage, getSiteConfig } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
@@ -19,6 +21,19 @@ export const Route = createFileRoute("/contato")({
 function Contato() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { data: page } = useQuery({
+    queryKey: ["page", "contato"],
+    queryFn: () => getPublicPage({ data: { slug: "contato" } }),
+    staleTime: 60_000,
+  });
+  const { data: cfg } = useQuery({
+    queryKey: ["site-config"],
+    queryFn: () => getSiteConfig(),
+    staleTime: 5 * 60_000,
+  });
+  const contact = (cfg?.["site.contact"] ?? {}) as { email?: string; phone?: string; whatsapp?: string; address?: string };
+  const title = page?.title ?? "Vamos conversar";
+  const intro = page?.excerpt ?? "Quer adotar um produto VSMS, integrar nossas plataformas ou tirar dúvidas? Respondemos em até 1 dia útil.";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,13 +53,8 @@ function Contato() {
         <div className="absolute -top-32 left-1/2 h-64 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <p className="text-sm font-medium text-primary">Contato</p>
-          <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-            Vamos <span className="text-gradient">conversar</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Quer adotar um produto VSMS, integrar nossas plataformas ou tirar
-            dúvidas? Respondemos em até 1 dia útil.
-          </p>
+          <h1 className="mt-3 text-4xl font-bold md:text-6xl">{title}</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">{intro}</p>
         </div>
       </section>
 
@@ -120,10 +130,10 @@ function Contato() {
           </div>
 
           <aside className="lg:col-span-2 space-y-4">
-            <ContactCard icon={Mail} title="E-mail" value="contato@vsms.com.br" href="mailto:contato@vsms.com.br" />
-            <ContactCard icon={MessageCircle} title="WhatsApp" value="+55 (11) 90000-0000" href="https://wa.me/5511900000000" />
-            <ContactCard icon={Phone} title="Telefone" value="+55 (11) 0000-0000" href="tel:+5511000000000" />
-            <ContactCard icon={MapPin} title="Endereço" value="São Paulo, Brasil" />
+            {contact.email && <ContactCard icon={Mail} title="E-mail" value={contact.email} href={`mailto:${contact.email}`} />}
+            {contact.whatsapp && <ContactCard icon={MessageCircle} title="WhatsApp" value={contact.whatsapp} href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} />}
+            {contact.phone && <ContactCard icon={Phone} title="Telefone" value={contact.phone} href={`tel:${contact.phone.replace(/\s/g, "")}`} />}
+            {contact.address && <ContactCard icon={MapPin} title="Endereço" value={contact.address} />}
           </aside>
         </div>
       </section>
