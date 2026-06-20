@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Target, Eye, Heart, Trophy } from "lucide-react";
+import { getPublicPage } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -16,6 +18,15 @@ export const Route = createFileRoute("/sobre")({
 });
 
 function Sobre() {
+  const { data: page } = useQuery({
+    queryKey: ["page", "sobre"],
+    queryFn: () => getPublicPage({ data: { slug: "sobre" } }),
+    staleTime: 60_000,
+  });
+  const sections = ((page?.content as any)?.sections ?? []) as { heading?: string; body?: string }[];
+  const title = page?.title ?? "Uma empresa orientada a produto";
+  const intro = page?.excerpt ?? "A VSMS Solutions cria e opera produtos digitais, plataformas SaaS e soluções de inteligência artificial — pensados para escalar e evoluir junto com pessoas e empresas.";
+
   return (
     <>
       <section className="relative overflow-hidden border-b border-border">
@@ -23,33 +34,28 @@ function Sobre() {
         <div className="absolute -top-32 left-1/2 h-64 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <p className="text-sm font-medium text-primary">Sobre nós</p>
-          <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-            Uma empresa orientada a <span className="text-gradient">produto</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            A VSMS Solutions cria e opera produtos digitais, plataformas SaaS
-            e soluções de inteligência artificial — pensados para escalar e
-            evoluir junto com pessoas e empresas.
-          </p>
+          <h1 className="mt-3 text-4xl font-bold md:text-6xl">{title}</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">{intro}</p>
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-24">
         <div className="prose-invert max-w-none space-y-6 text-muted-foreground">
-          <h2 className="text-2xl font-semibold text-foreground">Nossa história</h2>
-          <p>
-            A VSMS Solutions nasceu com uma convicção clara: o maior impacto
-            da tecnologia acontece quando ela vira produto — algo que pode
-            ser usado, evoluído e operado em escala, todos os dias.
-          </p>
-          <p>
-            Por isso, nosso foco principal é construir e operar plataformas
-            próprias dentro do ecossistema VSMS, como o Personal Virtual e o
-            SuperOfertas, além de novos SaaS e soluções de IA em
-            desenvolvimento. Nossos serviços de consultoria, implantação,
-            integrações e suporte existem como apoio estratégico para
-            potencializar o uso desses produtos.
-          </p>
+          {sections.length > 0 ? (
+            sections.map((s, i) => (
+              <div key={i}>
+                {s.heading && <h2 className="text-2xl font-semibold text-foreground">{s.heading}</h2>}
+                {s.body && <p className="mt-3 whitespace-pre-line">{s.body}</p>}
+              </div>
+            ))
+          ) : (
+            <>
+              <h2 className="text-2xl font-semibold text-foreground">Nossa história</h2>
+              <p>
+                A VSMS Solutions nasceu com uma convicção clara: o maior impacto da tecnologia acontece quando ela vira produto — algo que pode ser usado, evoluído e operado em escala, todos os dias.
+              </p>
+            </>
+          )}
         </div>
       </section>
 
