@@ -130,10 +130,10 @@ function Contato() {
           </div>
 
           <aside className="lg:col-span-2 space-y-4">
-            <ContactCard icon={Mail} title="E-mail" value="contato@vsms.com.br" href="mailto:contato@vsms.com.br" />
-            <ContactCard icon={MessageCircle} title="WhatsApp" value="+55 (11) 90000-0000" href="https://wa.me/5511900000000" />
-            <ContactCard icon={Phone} title="Telefone" value="+55 (11) 0000-0000" href="tel:+5511000000000" />
-            <ContactCard icon={MapPin} title="Endereço" value="São Paulo, Brasil" />
+            {contact.email && <ContactCard icon={Mail} title="E-mail" value={contact.email} href={`mailto:${contact.email}`} />}
+            {contact.whatsapp && <ContactCard icon={MessageCircle} title="WhatsApp" value={contact.whatsapp} href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} />}
+            {contact.phone && <ContactCard icon={Phone} title="Telefone" value={contact.phone} href={`tel:${contact.phone.replace(/\s/g, "")}`} />}
+            {contact.address && <ContactCard icon={MapPin} title="Endereço" value={contact.address} />}
           </aside>
         </div>
       </section>
