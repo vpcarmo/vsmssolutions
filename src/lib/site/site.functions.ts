@@ -147,8 +147,8 @@ export const updateSiteSetting = createServerFn({ method: "POST" })
       action: before ? "settings.update" : "settings.create",
       resource_type: "settings",
       resource_id: row!.id,
-      diff: { key: data.key, before: before?.value ?? null, after: data.value },
-    });
+      diff: { key: data.key, before: (before?.value ?? null) as never, after: data.value as never } as never,
+    } as never);
 
     return { ok: true, id: row!.id };
   });
