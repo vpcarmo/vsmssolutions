@@ -12,7 +12,10 @@ export const SITE_KEYS = [
 ] as const;
 export type SiteKey = (typeof SITE_KEYS)[number];
 
-export const SITE_DEFAULTS: Record<SiteKey, Record<string, unknown>> = {
+// Json-compatible plain shape (serializable across the server-fn RPC boundary)
+export type SiteValue = { [k: string]: any };
+
+export const SITE_DEFAULTS: Record<SiteKey, SiteValue> = {
   "site.brand": {
     name: "VSMS Solutions",
     tagline: "Produtos digitais, SaaS e IA",
@@ -41,7 +44,8 @@ export const SITE_DEFAULTS: Record<SiteKey, Record<string, unknown>> = {
   "site.contact": { email: "contato@vsms.com.br", phone: "", address: "", whatsapp: "" },
 };
 
-export type SiteConfig = Record<SiteKey, Record<string, unknown>>;
+export type SiteConfig = Record<SiteKey, SiteValue>;
+
 
 function publicClient() {
   return createClient<Database>(
