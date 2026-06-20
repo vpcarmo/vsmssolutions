@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { getSiteConfig, updateSiteSetting, SITE_DEFAULTS, type SiteKey, type SiteValue } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
