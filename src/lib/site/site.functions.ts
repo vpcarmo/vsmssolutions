@@ -104,7 +104,7 @@ export const listPublicProducts = createServerFn({ method: "GET" }).handler(asyn
 
 export const updateSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { key: SiteKey; value: Record<string, unknown> }) => {
+  .inputValidator((d: { key: SiteKey; value: SiteValue }) => {
     if (!d?.key || !(SITE_KEYS as readonly string[]).includes(d.key)) {
       throw new Error("Chave inválida");
     }
