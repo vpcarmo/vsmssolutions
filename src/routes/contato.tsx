@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle2 } from "lucide-react";
 import { getPublicPage, getSiteConfig } from "@/lib/site/site.functions";
+import { submitContact } from "@/lib/site/contact.functions";
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/contato")({
 function Contato() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { data: page } = useQuery({
     queryKey: ["page", "contato"],
     queryFn: () => getPublicPage({ data: { slug: "contato" } }),
@@ -35,16 +37,32 @@ function Contato() {
   const title = page?.title ?? "Vamos conversar";
   const intro = page?.excerpt ?? "Quer adotar um produto VSMS, integrar nossas plataformas ou tirar dúvidas? Respondemos em até 1 dia útil.";
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    // TODO: integrar com backend / Lovable Cloud na próxima fase
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    try {
+      await submitContact({
+        data: {
+          name: String(fd.get("name") ?? ""),
+          email: String(fd.get("email") ?? ""),
+          company: String(fd.get("company") ?? ""),
+          phone: String(fd.get("phone") ?? ""),
+          subject: String(fd.get("subject") ?? ""),
+          message: String(fd.get("message") ?? ""),
+        },
+      });
       setSent(true);
-      (e.target as HTMLFormElement).reset();
-    }, 700);
+      form.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao enviar. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   }
+
 
   return (
     <>
@@ -118,6 +136,9 @@ function Contato() {
                     className="mt-1.5 block w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
