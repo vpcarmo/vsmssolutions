@@ -18,7 +18,7 @@ export const listSubmissions = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("form_submissions")
-      .select("id, form_id, data, is_spam, captcha_verified, created_at, ip_address")
+      .select("id, form_id, data, is_spam, captcha_verified, created_at")
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.form_id) q = q.eq("form_id", data.form_id);
