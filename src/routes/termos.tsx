@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { LegalPage } from "@/components/site/LegalPage";
+import { getPublicPage } from "@/lib/site/site.functions";
+
+type LegalContent = { lead?: string; sections?: { heading?: string; body: string }[] };
 
 export const Route = createFileRoute("/termos")({
   head: () => ({
@@ -10,19 +14,24 @@ export const Route = createFileRoute("/termos")({
     ],
     links: [{ rel: "canonical", href: "https://vsms.com.br/termos" }],
   }),
-  component: () => (
-    <LegalPage
-      title="Termos de Uso"
-      lead="Ao utilizar este site, você concorda com as condições descritas abaixo."
-    >
-      <h2>1. Aceitação</h2>
-      <p>O uso deste site implica concordância integral com estes termos. Caso não concorde, por favor não utilize o site.</p>
-      <h2>2. Propriedade intelectual</h2>
-      <p>Todo o conteúdo — marca, textos, imagens, código — é de propriedade da VSMS Solutions ou licenciado, e não pode ser reproduzido sem autorização.</p>
-      <h2>3. Limitação de responsabilidade</h2>
-      <p>O conteúdo do site tem caráter informativo. A VSMS Solutions não se responsabiliza por decisões tomadas com base apenas nas informações aqui apresentadas.</p>
-      <h2>4. Alterações</h2>
-      <p>Estes termos podem ser atualizados a qualquer momento. A versão vigente estará sempre disponível nesta página.</p>
-    </LegalPage>
-  ),
+  component: TermosPage,
 });
+
+function TermosPage() {
+  const { data: page } = useQuery({
+    queryKey: ["page", "termos"],
+    queryFn: () => getPublicPage({ data: { slug: "termos" } }),
+    staleTime: 60_000,
+  });
+  const c = (page?.content ?? {}) as LegalContent;
+  return (
+    <LegalPage title={page?.title ?? "Termos de Uso"} lead={c.lead ?? page?.excerpt ?? "Condições gerais de uso."}>
+      {(c.sections ?? []).map((s, i) => (
+        <div key={i}>
+          {s.heading && <h2>{s.heading}</h2>}
+          <p>{s.body}</p>
+        </div>
+      ))}
+    </LegalPage>
+  );
+}

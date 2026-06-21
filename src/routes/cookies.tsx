@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { LegalPage } from "@/components/site/LegalPage";
+import { getPublicPage } from "@/lib/site/site.functions";
+
+type LegalContent = { lead?: string; sections?: { heading?: string; body: string }[] };
 
 export const Route = createFileRoute("/cookies")({
   head: () => ({
@@ -10,17 +14,24 @@ export const Route = createFileRoute("/cookies")({
     ],
     links: [{ rel: "canonical", href: "https://vsms.com.br/cookies" }],
   }),
-  component: () => (
-    <LegalPage
-      title="Política de Cookies"
-      lead="Utilizamos cookies para garantir a melhor experiência e medir o desempenho do site."
-    >
-      <h2>1. O que são cookies</h2>
-      <p>Cookies são pequenos arquivos armazenados no seu dispositivo que ajudam o site a lembrar preferências e medir o uso.</p>
-      <h2>2. Cookies que usamos</h2>
-      <p>Utilizamos cookies essenciais (necessários ao funcionamento) e analíticos (para entender o uso de forma agregada e anônima).</p>
-      <h2>3. Como gerenciar</h2>
-      <p>Você pode bloquear ou apagar cookies pelas configurações do seu navegador. Algumas funcionalidades podem deixar de operar normalmente.</p>
-    </LegalPage>
-  ),
+  component: CookiesPage,
 });
+
+function CookiesPage() {
+  const { data: page } = useQuery({
+    queryKey: ["page", "cookies"],
+    queryFn: () => getPublicPage({ data: { slug: "cookies" } }),
+    staleTime: 60_000,
+  });
+  const c = (page?.content ?? {}) as LegalContent;
+  return (
+    <LegalPage title={page?.title ?? "Política de Cookies"} lead={c.lead ?? page?.excerpt ?? "Uso de cookies neste site."}>
+      {(c.sections ?? []).map((s, i) => (
+        <div key={i}>
+          {s.heading && <h2>{s.heading}</h2>}
+          <p>{s.body}</p>
+        </div>
+      ))}
+    </LegalPage>
+  );
+}
