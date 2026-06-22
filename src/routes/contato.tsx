@@ -150,7 +150,7 @@ function Contato() {
             )}
           </div>
 
-          <aside className="lg:col-span-2 space-y-4">
+          <aside className="lg:col-span-2 flex flex-col gap-4">
             {contact.email && <ContactCard icon={Mail} title="E-mail" value={contact.email} href={`mailto:${contact.email}`} />}
             {contact.whatsapp && <ContactCard icon={MessageCircle} title="WhatsApp" value={contact.whatsapp} href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} />}
             {contact.phone && <ContactCard icon={Phone} title="Telefone" value={contact.phone} href={`tel:${contact.phone.replace(/\s/g, "")}`} />}
