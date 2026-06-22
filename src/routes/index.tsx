@@ -76,7 +76,7 @@ function Home() {
         <img src={heroBg} alt="" width={1920} height={1080} className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40" fetchPriority="high" decoding="async" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
         <div className="absolute inset-0 grid-bg" />
-        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-28 md:pt-32 md:pb-36">
+        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-28 md:pt-24 md:pb-36">
           <div className="mx-auto max-w-3xl text-center animate-fade-up">
             {hero.badge && (
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
