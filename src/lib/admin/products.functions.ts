@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type ProductType = "site" | "saas" | "ai_app";
+type ProductType = "site" | "saas" | "ia_app";
 type ProductStatus = "active" | "inactive" | "archived";
 
 export type ProductInput = {

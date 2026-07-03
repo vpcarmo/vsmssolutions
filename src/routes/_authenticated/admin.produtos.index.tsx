@@ -53,7 +53,7 @@ function ProdutosPage() {
     name: "",
     slug: "",
     description: "",
-    type: "saas" as "site" | "saas" | "ai_app",
+    type: "saas" as "site" | "saas" | "ia_app",
     status: "active" as "active" | "inactive" | "archived",
     primary_domain: "",
   });
@@ -118,7 +118,7 @@ function ProdutosPage() {
                     <SelectContent>
                       <SelectItem value="site">Site</SelectItem>
                       <SelectItem value="saas">SaaS</SelectItem>
-                      <SelectItem value="ai_app">App de IA</SelectItem>
+                      <SelectItem value="ia_app">App de IA</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

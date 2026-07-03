@@ -144,7 +144,7 @@ SELECT t.id, v.slug, v.name, v.type::public.product_type, v.description, 'active
 FROM public.tenants t,
   (VALUES
     ('site-vsms', 'Site Institucional VSMS', 'site', 'Site institucional oficial da VSMS Solutions'),
-    ('personal-virtual', 'Personal Virtual', 'ai_app', 'Assistente pessoal de saúde com IA'),
+    ('personal-virtual', 'Personal Virtual', 'ia_app', 'Assistente pessoal de saúde com IA'),
     ('superofertas', 'SuperOfertas', 'saas', 'Plataforma de ofertas e cupons')
   ) AS v(slug, name, type, description)
 WHERE t.slug = 'vsms'

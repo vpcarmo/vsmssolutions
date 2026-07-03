@@ -150,12 +150,17 @@ function Home() {
                         <Boxes className="h-5 w-5" />
                       </div>
                       <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">
-                        {p.type}
+                        {p.type == "ai_app" ? "ia_app" : p.type}
                       </span>
                     </div>
-                    <p className="mt-5 text-xs font-medium text-primary">{p.type}</p>
-                    <h3 className="mt-1 text-xl font-semibold">{p.name}</h3>
+                    {/* <p className="mt-5 text-xs font-medium text-primary">{p.type == "ai_app" ? "ia_app" : p.type}</p> */}
+                    <h3 className="mt-3 text-xl font-semibold">{p.name}</h3>
                     {p.description && <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>}
+                    {p.primary_domain && (
+                      <a href={`https://${p.primary_domain}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
+                        Acessar {p.primary_domain} <ArrowRight className="h-3 w-3" />
+                      </a>
+                    )}
                   </div>
                 </article>
               ))}

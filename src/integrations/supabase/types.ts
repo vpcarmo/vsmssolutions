@@ -958,7 +958,7 @@ export type Database = {
       page_status: "draft" | "published" | "archived"
       post_status: "draft" | "published" | "scheduled" | "archived"
       product_status: "active" | "inactive" | "archived"
-      product_type: "site" | "saas" | "ai_app"
+      product_type: "site" | "saas" | "ia_app"
       settings_scope: "global" | "tenant" | "product"
       tenant_status: "active" | "suspended" | "archived"
     }
@@ -1096,7 +1096,7 @@ export const Constants = {
       page_status: ["draft", "published", "archived"],
       post_status: ["draft", "published", "scheduled", "archived"],
       product_status: ["active", "inactive", "archived"],
-      product_type: ["site", "saas", "ai_app"],
+      product_type: ["site", "saas", "ia_app"],
       settings_scope: ["global", "tenant", "product"],
       tenant_status: ["active", "suspended", "archived"],
     },
