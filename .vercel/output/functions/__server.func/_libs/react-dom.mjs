@@ -3,6 +3,8 @@ import require$$1 from "crypto";
 import require$$2 from "async_hooks";
 import require$$5 from "stream";
 import { a as requireReact, g as getDefaultExportFromCjs } from "./react.mjs";
+var server_node = {};
+var reactDomServerLegacy_node_production = {};
 var reactDom = { exports: {} };
 var reactDom_production = {};
 var hasRequiredReactDom_production;
@@ -149,7 +151,7 @@ function requireReactDom_production() {
   reactDom_production.useFormStatus = function() {
     return ReactSharedInternals.H.useHostTransitionStatus();
   };
-  reactDom_production.version = "19.2.7";
+  reactDom_production.version = "19.2.8";
   return reactDom_production;
 }
 var hasRequiredReactDom;
@@ -172,9 +174,6 @@ function requireReactDom() {
   }
   return reactDom.exports;
 }
-var reactDomExports = requireReactDom();
-var server_node = {};
-var reactDomServerLegacy_node_production = {};
 var hasRequiredReactDomServerLegacy_node_production;
 function requireReactDomServerLegacy_node_production() {
   if (hasRequiredReactDomServerLegacy_node_production) return reactDomServerLegacy_node_production;
@@ -5051,7 +5050,7 @@ function requireReactDomServerLegacy_node_production() {
       'The server used "renderToString" which does not support Suspense. If you intended for this Suspense boundary to render the fallback content on the server consider throwing an Error somewhere within the Suspense boundary. If you intended to have the server wait for the suspended component please switch to "renderToPipeableStream" which supports Suspense on the server'
     );
   };
-  reactDomServerLegacy_node_production.version = "19.2.7";
+  reactDomServerLegacy_node_production.version = "19.2.8";
   return reactDomServerLegacy_node_production;
 }
 var reactDomServer_node_production = {};
@@ -10225,9 +10224,9 @@ function requireReactDomServer_node_production() {
   }
   function ensureCorrectIsomorphicReactVersion() {
     var isomorphicReactPackageVersion = React.version;
-    if ("19.2.7" !== isomorphicReactPackageVersion)
+    if ("19.2.8" !== isomorphicReactPackageVersion)
       throw Error(
-        'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.7\nLearn more: https://react.dev/warnings/version-mismatch")
+        'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch")
       );
   }
   ensureCorrectIsomorphicReactVersion();
@@ -10750,7 +10749,7 @@ function requireReactDomServer_node_production() {
       }
     };
   };
-  reactDomServer_node_production.version = "19.2.7";
+  reactDomServer_node_production.version = "19.2.8";
   return reactDomServer_node_production;
 }
 var hasRequiredServer_node;
@@ -10773,6 +10772,7 @@ function requireServer_node() {
 }
 var server_nodeExports = requireServer_node();
 const ReactDOMServer = /* @__PURE__ */ getDefaultExportFromCjs(server_nodeExports);
+var reactDomExports = requireReactDom();
 export {
   ReactDOMServer as R,
   reactDomExports as r

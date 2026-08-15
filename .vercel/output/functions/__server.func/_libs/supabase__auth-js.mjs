@@ -1,5 +1,5 @@
 import { __rest } from "tslib";
-const version = "2.108.2";
+const version = "2.112.3";
 const AUTO_REFRESH_TICK_DURATION_MS = 30 * 1e3;
 const AUTO_REFRESH_TICK_THRESHOLD = 3;
 const EXPIRY_MARGIN_MS = AUTO_REFRESH_TICK_THRESHOLD * AUTO_REFRESH_TICK_DURATION_MS;
@@ -15,6 +15,8 @@ const API_VERSIONS = {
   }
 };
 const BASE64URL_REGEX = /^([a-z0-9_-]{4})*($|[a-z0-9_-]{3}$|[a-z0-9_-]{2}$)$/i;
+const PKCE_FLOW_ID_PARAM = "sb_flow_id";
+const PKCE_MAX_CONCURRENT_FLOWS = 5;
 const JWKS_TTL = 10 * 60 * 1e3;
 class AuthError extends Error {
   constructor(message, status, code) {
@@ -469,16 +471,102 @@ async function generatePKCEChallenge(verifier) {
   const hashed = await sha256(verifier);
   return btoa(hashed).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-async function getCodeChallengeAndMethod(storage, storageKey, isPasswordRecovery = false) {
+const PKCE_FLOW_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
+function validatePKCEFlowId(flowId) {
+  return typeof flowId === "string" && PKCE_FLOW_ID_PATTERN.test(flowId) ? flowId : null;
+}
+function generatePKCEFlowId() {
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, dec2hex).join("");
+  }
+  let flowId = "";
+  for (let i = 0; i < 32; i++) {
+    flowId += Math.floor(Math.random() * 16).toString(16);
+  }
+  return flowId;
+}
+const pkceVerifierSlotKey = (storageKey, flowId) => `${storageKey}-flow-${flowId}-code-verifier`;
+const pkceFlowIndexKey = (storageKey) => `${storageKey}-flows-code-verifier`;
+async function getPKCEFlowIndex(storage, storageKey) {
+  const index = await getItemAsync(storage, pkceFlowIndexKey(storageKey));
+  return Array.isArray(index) ? index.filter((id) => validatePKCEFlowId(id) !== null) : [];
+}
+async function storePKCEVerifier(storage, storageKey, flowId, verifier, onEvictFlow) {
+  await setItemAsync(storage, pkceVerifierSlotKey(storageKey, flowId), verifier);
+  const index = (await getPKCEFlowIndex(storage, storageKey)).filter((id) => id !== flowId);
+  index.push(flowId);
+  while (index.length > PKCE_MAX_CONCURRENT_FLOWS) {
+    const evicted = index.shift();
+    await removeItemAsync(storage, pkceVerifierSlotKey(storageKey, evicted));
+    onEvictFlow === null || onEvictFlow === void 0 ? void 0 : onEvictFlow(evicted);
+  }
+  await setItemAsync(storage, pkceFlowIndexKey(storageKey), index);
+  await setItemAsync(storage, `${storageKey}-code-verifier`, verifier);
+}
+async function retrievePKCEVerifier(storage, storageKey, flowId) {
+  if (flowId) {
+    const verifier2 = await getItemAsync(storage, pkceVerifierSlotKey(storageKey, flowId));
+    return { verifier: typeof verifier2 === "string" ? verifier2 : null, flowId };
+  }
+  const verifier = await getItemAsync(storage, `${storageKey}-code-verifier`);
+  return { verifier: typeof verifier === "string" ? verifier : null, flowId: null };
+}
+async function removePKCEVerifier(storage, storageKey, flowId) {
+  const legacyKey = `${storageKey}-code-verifier`;
+  if (!flowId) {
+    await removeItemAsync(storage, legacyKey);
+    return;
+  }
+  const slotKey = pkceVerifierSlotKey(storageKey, flowId);
+  const slotValue = await getItemAsync(storage, slotKey);
+  await removeItemAsync(storage, slotKey);
+  const index = await getPKCEFlowIndex(storage, storageKey);
+  const remaining = index.filter((id) => id !== flowId);
+  if (remaining.length !== index.length) {
+    if (remaining.length > 0) {
+      await setItemAsync(storage, pkceFlowIndexKey(storageKey), remaining);
+    } else {
+      await removeItemAsync(storage, pkceFlowIndexKey(storageKey));
+    }
+  }
+  if (slotValue != null && slotValue === await getItemAsync(storage, legacyKey)) {
+    await removeItemAsync(storage, legacyKey);
+  }
+}
+async function removeAllPKCEVerifiers(storage, storageKey) {
+  const index = await getPKCEFlowIndex(storage, storageKey);
+  for (const flowId of index) {
+    await removeItemAsync(storage, pkceVerifierSlotKey(storageKey, flowId));
+  }
+  await removeItemAsync(storage, pkceFlowIndexKey(storageKey));
+  await removeItemAsync(storage, `${storageKey}-code-verifier`);
+}
+function appendFlowIdToRedirectTo(redirectTo, flowId) {
+  const hashIndex = redirectTo.indexOf("#");
+  let base = hashIndex === -1 ? redirectTo : redirectTo.slice(0, hashIndex);
+  const fragment = hashIndex === -1 ? "" : redirectTo.slice(hashIndex);
+  const queryIndex = base.indexOf("?");
+  if (queryIndex !== -1) {
+    const path = base.slice(0, queryIndex);
+    const remaining = base.slice(queryIndex + 1).split("&").filter((pair) => pair !== "" && pair !== PKCE_FLOW_ID_PARAM && !pair.startsWith(`${PKCE_FLOW_ID_PARAM}=`));
+    base = remaining.length > 0 ? `${path}?${remaining.join("&")}` : path;
+  }
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}${PKCE_FLOW_ID_PARAM}=${encodeURIComponent(flowId)}${fragment}`;
+}
+async function getCodeChallengeAndMethod(storage, storageKey, isPasswordRecovery = false, onEvictFlow) {
   const codeVerifier = generatePKCEVerifier();
   let storedCodeVerifier = codeVerifier;
   if (isPasswordRecovery) {
     storedCodeVerifier += "/recovery";
   }
-  await setItemAsync(storage, `${storageKey}-code-verifier`, storedCodeVerifier);
+  const flowId = generatePKCEFlowId();
+  await storePKCEVerifier(storage, storageKey, flowId, storedCodeVerifier, onEvictFlow);
   const codeChallenge = await generatePKCEChallenge(codeVerifier);
   const codeChallengeMethod = codeVerifier === codeChallenge ? "plain" : "s256";
-  return [codeChallenge, codeChallengeMethod];
+  return [codeChallenge, codeChallengeMethod, flowId];
 }
 const API_VERSION_REGEX = /^2[0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/i;
 function parseResponseAPIVersion(response) {
@@ -522,7 +610,7 @@ function getAlgorithm(alg) {
       throw new Error("Invalid alg claim");
   }
 }
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validateUUID(str) {
   if (!UUID_REGEX.test(str)) {
     throw new Error("@supabase/auth-js: Expected parameter to be UUID but is not");
@@ -616,14 +704,17 @@ async function handleError(error) {
   if (!looksLikeFetchResponse(error)) {
     throw new AuthRetryableFetchError(_getErrorMessage(error), 0);
   }
-  if (NETWORK_ERROR_CODES.includes(error.status)) {
-    throw new AuthRetryableFetchError(_getErrorMessage(error), error.status);
-  }
   let data;
   try {
     data = await error.json();
   } catch (e) {
+    if (NETWORK_ERROR_CODES.includes(error.status)) {
+      throw new AuthRetryableFetchError(error.statusText || `HTTP ${error.status}`, error.status);
+    }
     throw new AuthUnknownError(_getErrorMessage(e), e);
+  }
+  if (NETWORK_ERROR_CODES.includes(error.status)) {
+    throw new AuthRetryableFetchError(_getErrorMessage(data), error.status);
   }
   let errorCode = void 0;
   const responseAPIVersion = parseResponseAPIVersion(error);
@@ -678,7 +769,6 @@ async function _handleRequest(fetcher, method, url, options, parameters, body) {
   try {
     result = await fetcher(url, Object.assign({}, requestParams));
   } catch (e) {
-    console.error(e);
     throw new AuthRetryableFetchError(_getErrorMessage(e), 0);
   }
   if (!result.ok) {
@@ -903,10 +993,7 @@ class GoTrueAdminApi {
   }
   /**
    * Generates email links and OTPs to be sent via a custom email provider.
-   * @param email The user's email.
-   * @param options.password User password. For signup only.
-   * @param options.data Optional user metadata. For signup only.
-   * @param options.redirectTo The redirect url which should be appended to the generated link
+   * @param params The parameters for generating the link, including the link `type`, the user's `email`, and type-specific options such as `password`, `data`, and `redirectTo`.
    *
    * @category Auth
    * @subcategory Auth Admin
@@ -2693,6 +2780,7 @@ class GoTrueClient {
     this.lastRefreshFailure = null;
     this._sessionRemovalEpoch = 0;
     this.initializePromise = null;
+    this._pendingInitNotifications = null;
     this.detectSessionInUrl = true;
     this.hasCustomAuthorizationHeader = false;
     this.suppressGetSessionWarning = false;
@@ -2853,9 +2941,11 @@ class GoTrueClient {
    * @category Auth
    */
   async initialize() {
+    var _a;
     if (this.initializePromise) {
       return await this.initializePromise;
     }
+    this._pendingInitNotifications = [];
     this.initializePromise = (async () => {
       if (this.lock != null) {
         return await this._acquireLock(this.lockAcquireTimeout, async () => {
@@ -2864,7 +2954,13 @@ class GoTrueClient {
       }
       return await this._initialize();
     })();
-    return await this.initializePromise;
+    const result = await this.initializePromise;
+    const queue = (_a = this._pendingInitNotifications) !== null && _a !== void 0 ? _a : [];
+    this._pendingInitNotifications = null;
+    for (const n of queue) {
+      await this._notifyAllSubscribers(n.event, n.session, n.broadcast);
+    }
+    return result;
   }
   /**
    * IMPORTANT:
@@ -3204,6 +3300,7 @@ class GoTrueClient {
    */
   async signUp(credentials) {
     var _a, _b, _c;
+    let flowId = null;
     try {
       let res;
       if ("email" in credentials) {
@@ -3212,11 +3309,11 @@ class GoTrueClient {
         let codeChallengeMethod = null;
         if (this.flowType === "pkce") {
           ;
-          [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+          [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
         }
         res = await _request(this.fetch, "POST", `${this.url}/signup`, {
           headers: this.headers,
-          redirectTo: options === null || options === void 0 ? void 0 : options.emailRedirectTo,
+          redirectTo: this._maybeAppendFlowIdToRedirect(options === null || options === void 0 ? void 0 : options.emailRedirectTo, flowId),
           body: {
             email,
             password,
@@ -3245,7 +3342,7 @@ class GoTrueClient {
       }
       const { data, error } = res;
       if (error || !data) {
-        await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+        await removePKCEVerifier(this.storage, this.storageKey, flowId);
         return this._returnResult({ data: { user: null, session: null }, error });
       }
       const session = data.session;
@@ -3256,7 +3353,7 @@ class GoTrueClient {
       }
       return this._returnResult({ data: { user, session }, error: null });
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: { user: null, session: null }, error });
       }
@@ -3467,7 +3564,8 @@ class GoTrueClient {
    * {
    *   data: {
    *     provider: 'github',
-   *     url: <PROVIDER_URL_TO_REDIRECT_TO>
+   *     url: <PROVIDER_URL_TO_REDIRECT_TO>,
+   *     flowId: <PKCE_FLOW_ID_OR_NULL>
    *   },
    *   error: null
    * }
@@ -3540,10 +3638,27 @@ class GoTrueClient {
    *
    * @remarks
    * - Used when `flowType` is set to `pkce` in client options.
+   * - When several PKCE flows are in flight at once, pass `options.flowId` so
+   *   the code is exchanged with the verifier created by that specific flow.
+   *   The flow id is returned by `signInWithOAuth`, and with
+   *   `experimental.appendPkceFlowIdToRedirects` enabled it also arrives on
+   *   your callback URL as the reserved `sb_flow_id` query parameter (read
+   *   automatically in a browser).
+   * - When a flow id is present but its stored verifier is gone (evicted,
+   *   already used, or from another device), the call fails with a verifier
+   *   missing error instead of trying another flow's verifier — a mismatched
+   *   verifier would consume the single-use code. Without any flow id the
+   *   most recently stored verifier is used, as before.
    *
    * @example Exchange Auth Code
    * ```js
    * supabase.auth.exchangeCodeForSession('34e770dd-9ff9-416c-87fa-43b31d7ef225')
+   * ```
+   *
+   * @example Exchange Auth Code for a specific flow (e.g. in a server-side callback handler)
+   * ```js
+   * const flowId = requestUrl.searchParams.get('sb_flow_id')
+   * supabase.auth.exchangeCodeForSession(code, flowId ? { flowId } : undefined)
    * ```
    *
    * @exampleResponse Exchange Auth Code
@@ -3703,14 +3818,14 @@ class GoTrueClient {
    * }
    * ```
    */
-  async exchangeCodeForSession(authCode) {
+  async exchangeCodeForSession(authCode, options) {
     await this.initializePromise;
     if (this.lock != null) {
       return this._acquireLock(this.lockAcquireTimeout, async () => {
-        return this._exchangeCodeForSession(authCode);
+        return this._exchangeCodeForSession(authCode, options);
       });
     }
-    return this._exchangeCodeForSession(authCode);
+    return this._exchangeCodeForSession(authCode, options);
   }
   /**
    * Signs in a user by verifying a message signed by the user's private key.
@@ -4002,8 +4117,13 @@ class GoTrueClient {
       throw error;
     }
   }
-  async _exchangeCodeForSession(authCode) {
-    const storageItem = await getItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+  async _exchangeCodeForSession(authCode, options) {
+    const hasExplicitFlowId = (options === null || options === void 0 ? void 0 : options.flowId) != null;
+    const requestedFlowId = hasExplicitFlowId ? validatePKCEFlowId(options === null || options === void 0 ? void 0 : options.flowId) : isBrowser() ? validatePKCEFlowId(parseParametersFromURL(window.location.href)[PKCE_FLOW_ID_PARAM]) : null;
+    if (hasExplicitFlowId && !requestedFlowId) {
+      this._debug("#_exchangeCodeForSession()", "provided flowId is not a valid flow id", options === null || options === void 0 ? void 0 : options.flowId);
+    }
+    const { verifier: storageItem, flowId } = hasExplicitFlowId && !requestedFlowId ? { verifier: null, flowId: null } : await retrievePKCEVerifier(this.storage, this.storageKey, requestedFlowId);
     const [codeVerifier, redirectType] = (storageItem !== null && storageItem !== void 0 ? storageItem : "").split("/");
     try {
       if (!codeVerifier && this.flowType === "pkce") {
@@ -4017,7 +4137,7 @@ class GoTrueClient {
         },
         xform: _sessionResponse
       });
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (error) {
         throw error;
       }
@@ -4034,7 +4154,7 @@ class GoTrueClient {
       }
       return this._returnResult({ data: Object.assign(Object.assign({}, data), { redirectType: redirectType !== null && redirectType !== void 0 ? redirectType : null }), error });
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({
           data: { user: null, session: null, redirectType: null },
@@ -4231,6 +4351,7 @@ class GoTrueClient {
    */
   async signInWithOtp(credentials) {
     var _a, _b, _c, _d, _f;
+    let flowId = null;
     try {
       if ("email" in credentials) {
         const { email, options } = credentials;
@@ -4238,7 +4359,7 @@ class GoTrueClient {
         let codeChallengeMethod = null;
         if (this.flowType === "pkce") {
           ;
-          [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+          [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
         }
         const { error } = await _request(this.fetch, "POST", `${this.url}/otp`, {
           headers: this.headers,
@@ -4250,7 +4371,7 @@ class GoTrueClient {
             code_challenge: codeChallenge,
             code_challenge_method: codeChallengeMethod
           },
-          redirectTo: options === null || options === void 0 ? void 0 : options.emailRedirectTo
+          redirectTo: this._maybeAppendFlowIdToRedirect(options === null || options === void 0 ? void 0 : options.emailRedirectTo, flowId)
         });
         return this._returnResult({ data: { user: null, session: null }, error });
       }
@@ -4273,7 +4394,7 @@ class GoTrueClient {
       }
       throw new AuthInvalidCredentialsError("You must provide either an email or phone number.");
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: { user: null, session: null }, error });
       }
@@ -4507,25 +4628,26 @@ class GoTrueClient {
    * ```
    */
   async signInWithSSO(params) {
-    var _a, _b, _c, _d, _f;
+    var _a, _b, _c, _d;
+    let flowId = null;
     try {
       let codeChallenge = null;
       let codeChallengeMethod = null;
       if (this.flowType === "pkce") {
         ;
-        [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+        [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
       }
       const result = await _request(this.fetch, "POST", `${this.url}/sso`, {
-        body: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, "providerId" in params ? { provider_id: params.providerId } : null), "domain" in params ? { domain: params.domain } : null), { redirect_to: (_b = (_a = params.options) === null || _a === void 0 ? void 0 : _a.redirectTo) !== null && _b !== void 0 ? _b : void 0 }), ((_c = params === null || params === void 0 ? void 0 : params.options) === null || _c === void 0 ? void 0 : _c.captchaToken) ? { gotrue_meta_security: { captcha_token: params.options.captchaToken } } : null), { skip_http_redirect: true, code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod }),
+        body: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, "providerId" in params ? { provider_id: params.providerId } : null), "domain" in params ? { domain: params.domain } : null), { redirect_to: this._maybeAppendFlowIdToRedirect((_a = params.options) === null || _a === void 0 ? void 0 : _a.redirectTo, flowId) }), ((_b = params === null || params === void 0 ? void 0 : params.options) === null || _b === void 0 ? void 0 : _b.captchaToken) ? { gotrue_meta_security: { captcha_token: params.options.captchaToken } } : null), { skip_http_redirect: true, code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod }),
         headers: this.headers,
         xform: _ssoResponse
       });
-      if (((_d = result.data) === null || _d === void 0 ? void 0 : _d.url) && isBrowser() && !((_f = params.options) === null || _f === void 0 ? void 0 : _f.skipBrowserRedirect)) {
+      if (((_c = result.data) === null || _c === void 0 ? void 0 : _c.url) && isBrowser() && !((_d = params.options) === null || _d === void 0 ? void 0 : _d.skipBrowserRedirect)) {
         window.location.assign(result.data.url);
       }
       return this._returnResult(result);
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: null, error });
       }
@@ -4643,6 +4765,7 @@ class GoTrueClient {
    * ```
    */
   async resend(credentials) {
+    let flowId = null;
     try {
       const endpoint = `${this.url}/resend`;
       if ("email" in credentials) {
@@ -4651,7 +4774,7 @@ class GoTrueClient {
         let codeChallengeMethod = null;
         if (this.flowType === "pkce") {
           ;
-          [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+          [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
         }
         const { error } = await _request(this.fetch, "POST", endpoint, {
           headers: this.headers,
@@ -4662,10 +4785,10 @@ class GoTrueClient {
             code_challenge: codeChallenge,
             code_challenge_method: codeChallengeMethod
           },
-          redirectTo: options === null || options === void 0 ? void 0 : options.emailRedirectTo
+          redirectTo: this._maybeAppendFlowIdToRedirect(options === null || options === void 0 ? void 0 : options.emailRedirectTo, flowId)
         });
         if (error) {
-          await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+          await removePKCEVerifier(this.storage, this.storageKey, flowId);
         }
         return this._returnResult({ data: { user: null, session: null }, error });
       } else if ("phone" in credentials) {
@@ -4685,7 +4808,7 @@ class GoTrueClient {
       }
       throw new AuthInvalidCredentialsError("You must provide either an email or phone number and a type");
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: { user: null, session: null }, error });
       }
@@ -4701,7 +4824,7 @@ class GoTrueClient {
    * to the client. If that storage is based on request cookies for example,
    * the values in it may not be authentic and therefore it's strongly advised
    * against using this method and its results in such circumstances. A warning
-   * will be emitted if this is detected. Use {@link #getUser()} instead.
+   * will be emitted if this is detected. Use {@link GoTrueClient.getUser} instead.
    *
    * @category Auth
    *
@@ -4842,7 +4965,7 @@ class GoTrueClient {
     }
   }
   /**
-   * Use instead of {@link #getSession} inside the library. Loads the session
+   * Use instead of {@link GoTrueClient.getSession} inside the library. Loads the session
    * via `__loadSession` (which may trigger a refresh if the access token is
    * within the expiry margin) and runs `fn` with the result.
    */
@@ -4858,7 +4981,7 @@ class GoTrueClient {
   /**
    * NEVER USE DIRECTLY!
    *
-   * Always use {@link #_useSession}.
+   * Always use `_useSession`.
    */
   async __loadSession() {
     this._debug("#__loadSession()", "begin");
@@ -5038,7 +5161,6 @@ class GoTrueClient {
       if (isAuthError(error)) {
         if (isAuthSessionMissingError(error)) {
           await this._removeSession();
-          await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
         }
         return this._returnResult({ data: { user: null }, error });
       }
@@ -5169,6 +5291,7 @@ class GoTrueClient {
     return await this._updateUser(attributes, options);
   }
   async _updateUser(attributes, options = {}) {
+    let flowId = null;
     try {
       return await this._useSession(async (result) => {
         const { data: sessionData, error: sessionError } = result;
@@ -5183,11 +5306,11 @@ class GoTrueClient {
         let codeChallengeMethod = null;
         if (this.flowType === "pkce" && attributes.email != null) {
           ;
-          [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+          [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
         }
         const { data, error: userError } = await _request(this.fetch, "PUT", `${this.url}/user`, {
           headers: this.headers,
-          redirectTo: options === null || options === void 0 ? void 0 : options.emailRedirectTo,
+          redirectTo: this._maybeAppendFlowIdToRedirect(options === null || options === void 0 ? void 0 : options.emailRedirectTo, flowId),
           body: Object.assign(Object.assign({}, attributes), { code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod }),
           jwt: session.access_token,
           xform: _userResponse
@@ -5201,7 +5324,7 @@ class GoTrueClient {
         return this._returnResult({ data: { user: session.user }, error: null });
       });
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: { user: null }, error });
       }
@@ -5583,11 +5706,14 @@ class GoTrueClient {
         this._debug("#_initialize()", "begin", "is PKCE flow", true);
         if (!params.code)
           throw new AuthPKCEGrantCodeExchangeError("No code detected.");
-        const { data: data2, error: error2 } = await this._exchangeCodeForSession(params.code);
+        const { data: data2, error: error2 } = await this._exchangeCodeForSession(params.code, {
+          flowId: params[PKCE_FLOW_ID_PARAM]
+        });
         if (error2)
           throw error2;
         const url = new URL(window.location.href);
         url.searchParams.delete("code");
+        url.searchParams.delete(PKCE_FLOW_ID_PARAM);
         window.history.replaceState(window.history.state, "", url.toString());
         return {
           data: { session: data2.session, redirectType: (_a = data2.redirectType) !== null && _a !== void 0 ? _a : null },
@@ -5654,8 +5780,15 @@ class GoTrueClient {
    * Checks if the current URL and backing storage contain parameters given by a PKCE flow
    */
   async _isPKCECallback(params) {
+    if (!params.code) {
+      return false;
+    }
+    const flowId = validatePKCEFlowId(params[PKCE_FLOW_ID_PARAM]);
+    if (flowId && await getItemAsync(this.storage, pkceVerifierSlotKey(this.storageKey, flowId))) {
+      return true;
+    }
     const currentStorageContent = await getItemAsync(this.storage, `${this.storageKey}-code-verifier`);
-    return !!(params.code && currentStorageContent);
+    return !!currentStorageContent;
   }
   /**
    * Inside a browser context, `signOut()` will remove the logged in user from the browser session and log them out - removing all items from localstorage and then trigger a `"SIGNED_OUT"` event.
@@ -5710,6 +5843,9 @@ class GoTrueClient {
   async _signOut({ scope } = { scope: "global" }) {
     return await this._useSession(async (result) => {
       var _a;
+      const removeCurrentSession = async () => {
+        await this._removeSession();
+      };
       const { data, error: sessionError } = result;
       if (sessionError && !isAuthSessionMissingError(sessionError)) {
         return this._returnResult({ error: sessionError });
@@ -5719,13 +5855,15 @@ class GoTrueClient {
         const { error } = await this.admin.signOut(accessToken, scope);
         if (error) {
           if (!(isAuthApiError(error) && (error.status === 404 || error.status === 401 || error.status === 403) || isAuthSessionMissingError(error))) {
+            if (scope !== "others") {
+              await removeCurrentSession();
+            }
             return this._returnResult({ error });
           }
         }
       }
       if (scope !== "others") {
-        await this._removeSession();
-        await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+        await removeCurrentSession();
       }
       return this._returnResult({ error: null });
     });
@@ -5943,7 +6081,7 @@ class GoTrueClient {
       } catch (err) {
         await ((_b = this.stateChangeEmitters.get(id)) === null || _b === void 0 ? void 0 : _b.callback("INITIAL_SESSION", null));
         this._debug("INITIAL_SESSION", "callback id", id, "error", err);
-        if (isAuthSessionMissingError(err)) {
+        if (isAuthSessionMissingError(err) || isAuthRetryableFetchError(err) || isAuthApiError(err) && (err.code === "refresh_token_not_found" || err.code === "refresh_token_already_used" || err.code === "session_expired")) {
           console.warn(err);
         } else {
           console.error(err);
@@ -6021,10 +6159,9 @@ class GoTrueClient {
   async resetPasswordForEmail(email, options = {}) {
     let codeChallenge = null;
     let codeChallengeMethod = null;
+    let flowId = null;
     if (this.flowType === "pkce") {
-      [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(
-        this.storage,
-        this.storageKey,
+      [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod(
         true
         // isPasswordRecovery
       );
@@ -6038,10 +6175,10 @@ class GoTrueClient {
           gotrue_meta_security: { captcha_token: options.captchaToken }
         },
         headers: this.headers,
-        redirectTo: options.redirectTo
+        redirectTo: this._maybeAppendFlowIdToRedirect(options.redirectTo, flowId)
       });
     } catch (error) {
-      await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+      await removePKCEVerifier(this.storage, this.storageKey, flowId);
       if (isAuthError(error)) {
         return this._returnResult({ data: null, error });
       }
@@ -6123,7 +6260,8 @@ class GoTrueClient {
    * {
    *   data: {
    *     provider: 'github',
-   *     url: <PROVIDER_URL_TO_REDIRECT_TO>
+   *     url: <PROVIDER_URL_TO_REDIRECT_TO>,
+   *     flowId: <PKCE_FLOW_ID_OR_NULL>
    *   },
    *   error: null
    * }
@@ -6137,18 +6275,20 @@ class GoTrueClient {
   }
   async linkIdentityOAuth(credentials) {
     var _a;
+    let flowId = null;
     try {
       const { data, error } = await this._useSession(async (result) => {
         var _a2, _b, _c, _d, _f;
         const { data: data2, error: error2 } = result;
         if (error2)
           throw error2;
-        const url = await this._getUrlForProvider(`${this.url}/user/identities/authorize`, credentials.provider, {
+        const { url, flowId: urlFlowId } = await this._getUrlForProvider(`${this.url}/user/identities/authorize`, credentials.provider, {
           redirectTo: (_a2 = credentials.options) === null || _a2 === void 0 ? void 0 : _a2.redirectTo,
           scopes: (_b = credentials.options) === null || _b === void 0 ? void 0 : _b.scopes,
           queryParams: (_c = credentials.options) === null || _c === void 0 ? void 0 : _c.queryParams,
           skipBrowserRedirect: true
         });
+        flowId = urlFlowId;
         return await _request(this.fetch, "GET", url, {
           headers: this.headers,
           jwt: (_f = (_d = data2.session) === null || _d === void 0 ? void 0 : _d.access_token) !== null && _f !== void 0 ? _f : void 0
@@ -6160,12 +6300,15 @@ class GoTrueClient {
         window.location.assign(data === null || data === void 0 ? void 0 : data.url);
       }
       return this._returnResult({
-        data: { provider: credentials.provider, url: data === null || data === void 0 ? void 0 : data.url },
+        data: { provider: credentials.provider, url: data === null || data === void 0 ? void 0 : data.url, flowId },
         error: null
       });
     } catch (error) {
       if (isAuthError(error)) {
-        return this._returnResult({ data: { provider: credentials.provider, url: null }, error });
+        return this._returnResult({
+          data: { provider: credentials.provider, url: null, flowId },
+          error
+        });
       }
       throw error;
     }
@@ -6206,7 +6349,7 @@ class GoTrueClient {
         }
         return this._returnResult({ data, error });
       } catch (error) {
-        await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
+        await removePKCEVerifier(this.storage, this.storageKey, null);
         if (isAuthError(error)) {
           return this._returnResult({ data: { user: null, session: null }, error });
         }
@@ -6298,7 +6441,7 @@ class GoTrueClient {
     return isValidSession;
   }
   async _handleProviderSignIn(provider, options) {
-    const url = await this._getUrlForProvider(`${this.url}/authorize`, provider, {
+    const { url, flowId } = await this._getUrlForProvider(`${this.url}/authorize`, provider, {
       redirectTo: options.redirectTo,
       scopes: options.scopes,
       queryParams: options.queryParams
@@ -6307,7 +6450,7 @@ class GoTrueClient {
     if (isBrowser() && !options.skipBrowserRedirect) {
       window.location.assign(url);
     }
-    return { data: { provider, url }, error: null };
+    return { data: { provider, url, flowId }, error: null };
   }
   /**
    * Recovers the session from LocalStorage and refreshes the token
@@ -6378,7 +6521,11 @@ class GoTrueClient {
       }
     } catch (err) {
       this._debug(debugName, "error", err);
-      console.error(err);
+      if (isAuthRetryableFetchError(err)) {
+        console.warn(err);
+      } else {
+        console.error(err);
+      }
       return;
     } finally {
       this._debug(debugName, "end");
@@ -6471,6 +6618,10 @@ class GoTrueClient {
     }
   }
   async _notifyAllSubscribers(event, session, broadcast = true) {
+    if (this._pendingInitNotifications !== null && broadcast) {
+      this._pendingInitNotifications.push({ event, session, broadcast });
+      return;
+    }
     const debugName = `#_notifyAllSubscribers(${event})`;
     this._debug(debugName, "begin", session, `broadcast = ${broadcast}`);
     try {
@@ -6503,7 +6654,6 @@ class GoTrueClient {
   async _saveSession(session) {
     this._debug("#_saveSession()", session);
     this.suppressGetSessionWarning = true;
-    await removeItemAsync(this.storage, `${this.storageKey}-code-verifier`);
     const sessionToProcess = Object.assign({}, session);
     const userIsProxy = sessionToProcess.user && sessionToProcess.user.__isUserNotAvailableProxy === true;
     if (this.userStorage) {
@@ -6527,7 +6677,7 @@ class GoTrueClient {
     this.lastRefreshFailure = null;
     this.suppressGetSessionWarning = false;
     await removeItemAsync(this.storage, this.storageKey);
-    await removeItemAsync(this.storage, this.storageKey + "-code-verifier");
+    await removeAllPKCEVerifiers(this.storage, this.storageKey);
     await removeItemAsync(this.storage, this.storageKey + "-user");
     if (this.userStorage) {
       await removeItemAsync(this.userStorage, this.storageKey + "-user");
@@ -6537,8 +6687,8 @@ class GoTrueClient {
   /**
    * Removes any registered visibilitychange callback.
    *
-   * {@see #startAutoRefresh}
-   * {@see #stopAutoRefresh}
+   * {@link GoTrueClient.startAutoRefresh}
+   * {@link GoTrueClient.stopAutoRefresh}
    */
   _removeVisibilityChangedCallback() {
     this._debug("#_removeVisibilityChangedCallback()");
@@ -6553,7 +6703,7 @@ class GoTrueClient {
     }
   }
   /**
-   * This is the private implementation of {@link #startAutoRefresh}. Use this
+   * This is the private implementation of {@link GoTrueClient.startAutoRefresh}. Use this
    * within the library.
    */
   async _startAutoRefresh() {
@@ -6578,7 +6728,7 @@ class GoTrueClient {
     }
   }
   /**
-   * This is the private implementation of {@link #stopAutoRefresh}. Use this
+   * This is the private implementation of {@link GoTrueClient.stopAutoRefresh}. Use this
    * within the library.
    */
   async _stopAutoRefresh() {
@@ -6614,7 +6764,7 @@ class GoTrueClient {
    * platform's foreground indication mechanism and call these methods
    * appropriately to conserve resources.
    *
-   * {@see #stopAutoRefresh}
+   * {@link GoTrueClient.stopAutoRefresh}
    *
    * @category Auth
    *
@@ -6648,7 +6798,7 @@ class GoTrueClient {
    * If you call this method any managed visibility change callback will be
    * removed and you must manage visibility changes on your own.
    *
-   * See {@link #startAutoRefresh} for more details.
+   * See {@link GoTrueClient.startAutoRefresh} for more details.
    *
    * @category Auth
    *
@@ -6847,15 +6997,22 @@ class GoTrueClient {
    * @param options.queryParams An object of key-value pairs containing query parameters granted to the OAuth application.
    */
   async _getUrlForProvider(url, provider, options) {
+    let redirectTo = options === null || options === void 0 ? void 0 : options.redirectTo;
+    let codeChallenge = null;
+    let codeChallengeMethod = null;
+    let flowId = null;
+    if (this.flowType === "pkce") {
+      [codeChallenge, codeChallengeMethod, flowId] = await this._getCodeChallengeAndMethod();
+      redirectTo = this._maybeAppendFlowIdToRedirect(redirectTo, flowId);
+    }
     const urlParams = [`provider=${encodeURIComponent(provider)}`];
-    if (options === null || options === void 0 ? void 0 : options.redirectTo) {
-      urlParams.push(`redirect_to=${encodeURIComponent(options.redirectTo)}`);
+    if (redirectTo) {
+      urlParams.push(`redirect_to=${encodeURIComponent(redirectTo)}`);
     }
     if (options === null || options === void 0 ? void 0 : options.scopes) {
       urlParams.push(`scopes=${encodeURIComponent(options.scopes)}`);
     }
-    if (this.flowType === "pkce") {
-      const [codeChallenge, codeChallengeMethod] = await getCodeChallengeAndMethod(this.storage, this.storageKey);
+    if (codeChallenge != null && codeChallengeMethod != null) {
       const flowParams = new URLSearchParams({
         code_challenge: `${encodeURIComponent(codeChallenge)}`,
         code_challenge_method: `${encodeURIComponent(codeChallengeMethod)}`
@@ -6869,7 +7026,27 @@ class GoTrueClient {
     if (options === null || options === void 0 ? void 0 : options.skipBrowserRedirect) {
       urlParams.push(`skip_http_redirect=${options.skipBrowserRedirect}`);
     }
-    return `${url}?${urlParams.join("&")}`;
+    return { url: `${url}?${urlParams.join("&")}`, flowId };
+  }
+  /**
+   * Appends the reserved flow id parameter to a redirect URL so the callback
+   * can be matched to the verifier stored for its flow. Opt-in via
+   * `experimental.appendPkceFlowIdToRedirects`: redirect URLs are validated
+   * against the project's allow list including the query string, so an extra
+   * parameter can stop exact (non-wildcard) entries from matching.
+   */
+  _maybeAppendFlowIdToRedirect(redirectTo, flowId) {
+    if (!redirectTo || !flowId || !this.experimental.appendPkceFlowIdToRedirects) {
+      return redirectTo !== null && redirectTo !== void 0 ? redirectTo : void 0;
+    }
+    return appendFlowIdToRedirectTo(redirectTo, flowId);
+  }
+  /**
+   * Generates and stores a PKCE challenge/verifier pair for a new flow,
+   * logging any pending verifier the bounded slot ring evicts.
+   */
+  async _getCodeChallengeAndMethod(isPasswordRecovery = false) {
+    return getCodeChallengeAndMethod(this.storage, this.storageKey, isPasswordRecovery, (evictedFlowId) => this._debug("#_getCodeChallengeAndMethod()", "evicted oldest pending PKCE verifier slot", evictedFlowId));
   }
   async _unenroll(params) {
     try {
@@ -7003,7 +7180,7 @@ class GoTrueClient {
     return run();
   }
   /**
-   * {@see GoTrueMFAApi#challengeAndVerify}
+   * {@link GoTrueMFAApi#challengeAndVerify}
    */
   async _challengeAndVerify(params) {
     const { data: challengeData, error: challengeError } = await this._challenge({
@@ -7019,7 +7196,7 @@ class GoTrueClient {
     });
   }
   /**
-   * {@see GoTrueMFAApi#listFactors}
+   * {@link GoTrueMFAApi#listFactors}
    */
   async _listFactors() {
     var _a;
@@ -7045,7 +7222,7 @@ class GoTrueClient {
     };
   }
   /**
-   * {@see GoTrueMFAApi#getAuthenticatorAssuranceLevel}
+   * {@link GoTrueMFAApi#getAuthenticatorAssuranceLevel}
    */
   async _getAuthenticatorAssuranceLevel(jwt) {
     var _a, _b, _c, _d;
@@ -7283,15 +7460,15 @@ class GoTrueClient {
    * Extracts the JWT claims present in the access token by first verifying the
    * JWT against the server's JSON Web Key Set endpoint
    * `/.well-known/jwks.json` which is often cached, resulting in significantly
-   * faster responses. Prefer this method over {@link #getUser} which always
+   * faster responses. Prefer this method over {@link GoTrueClient.getUser} which always
    * sends a request to the Auth server for each JWT.
    *
    * If the project is not using an asymmetric JWT signing key (like ECC or
-   * RSA) it always sends a request to the Auth server (similar to {@link
-   * #getUser}) to verify the JWT.
+   * RSA) it always sends a request to the Auth server (similar to
+   * {@link GoTrueClient.getUser}) to verify the JWT.
    *
    * @param jwt An optional specific JWT you wish to verify, not the one you
-   *            can obtain from {@link #getSession}.
+   *            can obtain from {@link GoTrueClient.getSession}.
    * @param options Various additional options that allow you to customize the
    *                behavior of this method.
    *

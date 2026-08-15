@@ -36,22 +36,10 @@ class WebSocketFactory {
     if (_process) {
       const processVersions = _process["versions"];
       if (processVersions && processVersions["node"]) {
-        const versionString = processVersions["node"];
-        const nodeVersion = parseInt(versionString.replace(/^v/, "").split(".")[0]);
-        if (nodeVersion >= 22) {
-          if (typeof globalThis.WebSocket !== "undefined") {
-            return { type: "native", wsConstructor: globalThis.WebSocket };
-          }
-          return {
-            type: "unsupported",
-            error: `Node.js ${nodeVersion} detected but native WebSocket not found.`,
-            workaround: "Provide a WebSocket implementation via the transport option."
-          };
-        }
         return {
           type: "unsupported",
-          error: `Node.js ${nodeVersion} detected without native WebSocket support.`,
-          workaround: 'For Node.js < 22, install "ws" package and provide it via the transport option:\nimport ws from "ws"\nnew RealtimeClient(url, { transport: ws })'
+          error: "Node.js detected but native WebSocket not found.",
+          workaround: "Ensure you are running Node.js 22+ or provide a WebSocket implementation via the transport option."
         };
       }
     }
@@ -105,13 +93,13 @@ Suggested solution: ${env.workaround}`;
   static isWebSocketSupported() {
     try {
       const env = this.detectEnvironment();
-      return env.type === "native" || env.type === "ws";
+      return env.type === "native";
     } catch (_a) {
       return false;
     }
   }
 }
-const version = "2.108.2";
+const version = "2.112.3";
 const DEFAULT_VERSION = `realtime-js/${version}`;
 const VSN_1_0_0 = "1.0.0";
 const VSN_2_0_0 = "2.0.0";
@@ -177,12 +165,13 @@ class Serializer {
   }
   _encodeUserBroadcastPush(message, encodingType, encodedPayload) {
     var _a, _b;
-    const topic = message.topic;
-    const ref = (_a = message.ref) !== null && _a !== void 0 ? _a : "";
-    const joinRef = (_b = message.join_ref) !== null && _b !== void 0 ? _b : "";
-    const userEvent = message.payload.event;
+    const encoder = new TextEncoder();
+    const topic = encoder.encode(message.topic);
+    const ref = encoder.encode((_a = message.ref) !== null && _a !== void 0 ? _a : "");
+    const joinRef = encoder.encode((_b = message.join_ref) !== null && _b !== void 0 ? _b : "");
+    const userEvent = encoder.encode(message.payload.event);
     const rest = this.allowedMetadataKeys ? this._pick(message.payload, this.allowedMetadataKeys) : {};
-    const metadata = Object.keys(rest).length === 0 ? "" : JSON.stringify(rest);
+    const metadata = encoder.encode(Object.keys(rest).length === 0 ? "" : JSON.stringify(rest));
     if (joinRef.length > 255) {
       throw new Error(`joinRef length ${joinRef.length} exceeds maximum of 255`);
     }
@@ -200,7 +189,8 @@ class Serializer {
     }
     const metaLength = this.USER_BROADCAST_PUSH_META_LENGTH + joinRef.length + ref.length + topic.length + userEvent.length + metadata.length;
     const header = new ArrayBuffer(this.HEADER_LENGTH + metaLength);
-    let view = new DataView(header);
+    const view = new DataView(header);
+    const bytes = new Uint8Array(header);
     let offset = 0;
     view.setUint8(offset++, this.KINDS.userBroadcastPush);
     view.setUint8(offset++, joinRef.length);
@@ -209,11 +199,16 @@ class Serializer {
     view.setUint8(offset++, userEvent.length);
     view.setUint8(offset++, metadata.length);
     view.setUint8(offset++, encodingType);
-    Array.from(joinRef, (char) => view.setUint8(offset++, char.charCodeAt(0)));
-    Array.from(ref, (char) => view.setUint8(offset++, char.charCodeAt(0)));
-    Array.from(topic, (char) => view.setUint8(offset++, char.charCodeAt(0)));
-    Array.from(userEvent, (char) => view.setUint8(offset++, char.charCodeAt(0)));
-    Array.from(metadata, (char) => view.setUint8(offset++, char.charCodeAt(0)));
+    bytes.set(joinRef, offset);
+    offset += joinRef.length;
+    bytes.set(ref, offset);
+    offset += ref.length;
+    bytes.set(topic, offset);
+    offset += topic.length;
+    bytes.set(userEvent, offset);
+    offset += userEvent.length;
+    bytes.set(metadata, offset);
+    offset += metadata.length;
     var combined = new Uint8Array(header.byteLength + encodedPayload.byteLength);
     combined.set(new Uint8Array(header), 0);
     combined.set(new Uint8Array(encodedPayload), header.byteLength);
@@ -509,10 +504,12 @@ class PresenceAdapter {
 }
 function transformState(presences) {
   return presences.metas.map((presence) => {
-    presence["presence_ref"] = presence["phx_ref"];
-    delete presence["phx_ref"];
-    delete presence["phx_ref_prev"];
-    return presence;
+    const descriptors = Object.getOwnPropertyDescriptors(presence);
+    const transformedPresence = Object.defineProperties({}, descriptors);
+    transformedPresence["presence_ref"] = transformedPresence["phx_ref"];
+    delete transformedPresence["phx_ref"];
+    delete transformedPresence["phx_ref_prev"];
+    return transformedPresence;
   });
 }
 function cloneState(state) {
@@ -669,6 +666,118 @@ function phoenixChannelParams(options) {
       private: false
     }, options.config)
   };
+}
+const PostgrestReservedCharsRegexp = /[,()"\\]/;
+const needsQuoting = (value) => PostgrestReservedCharsRegexp.test(value) || value !== value.trim();
+const quote = (value) => `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+const serializeScalar = (value) => {
+  const serialized = value === null ? "null" : String(value);
+  return needsQuoting(serialized) ? quote(serialized) : serialized;
+};
+const serializeIsValue = (value) => value === null ? "null" : String(value);
+const serialize = (operator, value) => {
+  if (operator === "in") {
+    const values = Array.isArray(value) ? value : [value];
+    if (values.length === 0) {
+      throw new Error("Realtime `in` filter requires at least one value.");
+    }
+    const items = Array.from(new Set(values)).map((v) => serializeScalar(v)).join(",");
+    return `in.(${items})`;
+  }
+  if (operator === "is") {
+    return `is.${serializeIsValue(value)}`;
+  }
+  return `${operator}.${serializeScalar(value)}`;
+};
+class RealtimePostgresFilterBuilder {
+  constructor() {
+    this.filters = [];
+  }
+  add(column, operator, value, negate = false) {
+    const prefix = negate ? "not." : "";
+    this.filters.push(`${column}=${prefix}${serialize(operator, value)}`);
+    return this;
+  }
+  /** Match rows where `column` equals `value` (`column=eq.value`). */
+  eq(column, value) {
+    return this.add(column, "eq", value);
+  }
+  /** Match rows where `column` does not equal `value` (`column=neq.value`). */
+  neq(column, value) {
+    return this.add(column, "neq", value);
+  }
+  /** Match rows where `column` is greater than `value` (`column=gt.value`). */
+  gt(column, value) {
+    return this.add(column, "gt", value);
+  }
+  /** Match rows where `column` is greater than or equal to `value` (`column=gte.value`). */
+  gte(column, value) {
+    return this.add(column, "gte", value);
+  }
+  /** Match rows where `column` is less than `value` (`column=lt.value`). */
+  lt(column, value) {
+    return this.add(column, "lt", value);
+  }
+  /** Match rows where `column` is less than or equal to `value` (`column=lte.value`). */
+  lte(column, value) {
+    return this.add(column, "lte", value);
+  }
+  /**
+   * Match rows where `column` is one of `values` (`column=in.(a,b,c)`).
+   * Requires at least one value; duplicates are removed. An element containing a
+   * reserved character is double-quoted (`in.("a,b",c)`), so commas inside an
+   * element are preserved. `null` is intentionally not accepted (`IN (null)`
+   * never matches in SQL) — use `is`/`not('col','is',null)` for null checks.
+   */
+  in(column, values) {
+    return this.add(column, "in", values);
+  }
+  /** Match rows where `column` matches the case-sensitive `pattern` (`column=like.pattern`). */
+  like(column, pattern) {
+    return this.add(column, "like", pattern);
+  }
+  /** Match rows where `column` matches the case-insensitive `pattern` (`column=ilike.pattern`). */
+  ilike(column, pattern) {
+    return this.add(column, "ilike", pattern);
+  }
+  /** Match rows where `column` matches the POSIX regex `pattern` (`column=match.pattern`). */
+  match(column, pattern) {
+    return this.add(column, "match", pattern);
+  }
+  /** Match rows where `column` matches the case-insensitive POSIX regex `pattern` (`column=imatch.pattern`). */
+  imatch(column, pattern) {
+    return this.add(column, "imatch", pattern);
+  }
+  /**
+   * Match rows where `column` `IS` the given value (`column=is.null`).
+   * Accepts `null`, a boolean, or the keywords `'null' | 'true' | 'false' | 'unknown'`.
+   */
+  is(column, value) {
+    return this.add(column, "is", value);
+  }
+  /** Match rows where `column` is distinct from `value` (`column=isdistinct.value`). NULL-safe inequality. */
+  isDistinct(column, value) {
+    return this.add(column, "isdistinct", value);
+  }
+  not(column, operator, value) {
+    return this.add(column, operator, value, true);
+  }
+  /**
+   * Serialize all conditions into the comma-separated (AND) filter string.
+   *
+   * Conditions are joined by commas, which the server applies as `AND`. A scalar
+   * value (or single `in` element) that contains a reserved character — `,`,
+   * `(`, `)`, `"`, `\` — or surrounding whitespace is double-quoted and escaped
+   * the way PostgREST does, so commas inside a value are preserved rather than
+   * read as a condition boundary.
+   */
+  build() {
+    return this.filters.join(",");
+  }
+  /** Alias for {@link build}; lets the builder be used wherever a string is expected. */
+  toString() {
+    return this.build();
+  }
 }
 var REALTIME_POSTGRES_CHANGES_LISTEN_EVENT;
 (function(REALTIME_POSTGRES_CHANGES_LISTEN_EVENT2) {
@@ -864,6 +973,11 @@ class RealtimeChannel {
    * Sends the supplied payload to the presence tracker so other subscribers can see that this
    * client is online. Use `untrack` to stop broadcasting presence for the same key.
    *
+   * Tracking makes this client visible to other subscribers immediately, regardless of this
+   * channel's `config.presence.enabled` setting or whether it has a `presence` listener — that
+   * flag only affects whether *this* client receives presence updates from others (and, on
+   * RLS-protected channels, whether it's authorized to do so).
+   *
    * @category Realtime
    */
   async track(payload, opts = {}) {
@@ -871,7 +985,7 @@ class RealtimeChannel {
       type: "presence",
       event: "track",
       payload
-    }, opts.timeout || this.timeout);
+    }, opts);
   }
   /**
    * Removes the current presence state for this client.
@@ -953,6 +1067,10 @@ class RealtimeChannel {
    *     }
    *   })
    * ```
+   *
+   * Registering the same `postgres_changes` filter more than once on a channel is a no-op: the
+   * duplicate is ignored and an error is logged, since the server only ever creates one
+   * subscription per distinct filter.
    *
    * @example Listen to all database changes
    * ```js
@@ -1247,7 +1365,19 @@ class RealtimeChannel {
   }
   /** @internal */
   _on(type, filter, callback) {
+    var _a;
     const typeLower = type.toLocaleLowerCase();
+    const filterValue = filter === null || filter === void 0 ? void 0 : filter.filter;
+    if (filterValue instanceof RealtimePostgresFilterBuilder || typeof filterValue === "object" && filterValue !== null && typeof filterValue.build === "function") {
+      filter = Object.assign(Object.assign({}, filter), { filter: filterValue.build() });
+    }
+    if (typeLower === REALTIME_LISTEN_TYPES.POSTGRES_CHANGES) {
+      const duplicate = (_a = this.bindings[typeLower]) === null || _a === void 0 ? void 0 : _a.find((bind) => RealtimeChannel.isSamePostgresFilter(bind.filter, filter));
+      if (duplicate) {
+        this.socket.log("error", `duplicate \`postgres_changes\` binding for ${this.topic} ignored`, filter);
+        return this;
+      }
+    }
     const ref = this.channelAdapter.on(type, callback);
     const binding = {
       type: typeLower,
@@ -1350,6 +1480,17 @@ class RealtimeChannel {
     const normalizedServer = serverValue !== null && serverValue !== void 0 ? serverValue : void 0;
     const normalizedClient = clientValue !== null && clientValue !== void 0 ? clientValue : void 0;
     return normalizedServer === normalizedClient;
+  }
+  /**
+   * Two `postgres_changes` filters are the same when the server would collapse them into a single
+   * subscription.
+   * @internal
+   */
+  static isSamePostgresFilter(a, b) {
+    var _a, _b, _c, _d;
+    const selectA = (_b = (_a = a === null || a === void 0 ? void 0 : a.select) === null || _a === void 0 ? void 0 : _a.join()) !== null && _b !== void 0 ? _b : void 0;
+    const selectB = (_d = (_c = b === null || b === void 0 ? void 0 : b.select) === null || _c === void 0 ? void 0 : _c.join()) !== null && _d !== void 0 ? _d : void 0;
+    return (a === null || a === void 0 ? void 0 : a.event) === (b === null || b === void 0 ? void 0 : b.event) && RealtimeChannel.isFilterValueEqual(a === null || a === void 0 ? void 0 : a.schema, b === null || b === void 0 ? void 0 : b.schema) && RealtimeChannel.isFilterValueEqual(a === null || a === void 0 ? void 0 : a.table, b === null || b === void 0 ? void 0 : b.table) && RealtimeChannel.isFilterValueEqual(a === null || a === void 0 ? void 0 : a.filter, b === null || b === void 0 ? void 0 : b.filter) && selectA === selectB;
   }
   /** @internal */
   _getPayloadRecords(payload) {
@@ -1570,7 +1711,6 @@ class RealtimeClient {
    * Initializes the Socket.
    *
    * @param endPoint The string WebSocket endpoint, ie, "ws://example.com/socket", "wss://example.com", "/socket" (inherited host & protocol)
-   * @param httpEndpoint The string HTTP endpoint, ie, "https://example.com", "/" (inherited host & protocol)
    * @param options.transport The Websocket Transport, for example WebSocket. This can be a custom implementation
    * @param options.timeout The default timeout in milliseconds to trigger push timeouts.
    * @param options.params The optional params to pass when connecting.
@@ -1622,6 +1762,7 @@ class RealtimeClient {
     this.serializer = new Serializer();
     this._manuallySetToken = false;
     this._authPromise = null;
+    this._authGeneration = 0;
     this._workerHeartbeatTimer = void 0;
     this._pendingWorkerHeartbeatRef = null;
     this._pendingDisconnectTimer = null;
@@ -1658,22 +1799,6 @@ class RealtimeClient {
       this.socketAdapter.connect();
     } catch (error) {
       const errorMessage = error.message;
-      if (errorMessage.includes("Node.js")) {
-        throw new Error(`${errorMessage}
-
-To use Realtime in Node.js, you need to provide a WebSocket implementation:
-
-Option 1: Use Node.js 22+ which has native WebSocket support
-Option 2: Install and provide the "ws" package:
-
-  npm install ws
-
-  import ws from "ws"
-  const client = new RealtimeClient(url, {
-    ...options,
-    transport: ws
-  })`);
-      }
       throw new Error(`WebSocket not available: ${errorMessage}`);
     }
     this._handleNodeJsRaceCondition();
@@ -1821,14 +1946,18 @@ Option 2: Install and provide the "ws" package:
    *
    * On callback used, it will set the value of the token internal to the client.
    *
-   * When a token is explicitly provided, it will be preserved across channel operations
-   * (including removeChannel and resubscribe). The `accessToken` callback will not be
-   * invoked until `setAuth()` is called without arguments.
+   * When a token is explicitly provided AND no `accessToken` callback is configured,
+   * it will be preserved across channel operations (including removeChannel and
+   * resubscribe) and the client stays in manual-token mode.
+   *
+   * When an `accessToken` callback IS configured, the callback is the source of truth:
+   * the client remains in callback mode and continues to refresh from it on heartbeat,
+   * even after a bootstrap/override `setAuth(token)` call.
    *
    * @param token A JWT string to override the token set on the client.
    *
    * @example Setting the authorization header
-   * // Use a manual token (preserved across resubscribes, ignores accessToken callback)
+   * // Use a manual token (preserved across resubscribes when no accessToken callback is set)
    * client.realtime.setAuth('my-custom-jwt')
    *
    * // Switch back to using the accessToken callback
@@ -1837,11 +1966,17 @@ Option 2: Install and provide the "ws" package:
    * @category Realtime
    */
   async setAuth(token = null) {
-    this._authPromise = this._performAuth(token);
+    const authGeneration = ++this._authGeneration;
+    const authPromise = this._performAuth(token, authGeneration);
+    if (authGeneration === this._authGeneration) {
+      this._authPromise = authPromise;
+    }
     try {
-      await this._authPromise;
+      await authPromise;
     } finally {
-      this._authPromise = null;
+      if (this._authPromise === authPromise) {
+        this._authPromise = null;
+      }
     }
   }
   /**
@@ -1862,7 +1997,7 @@ Option 2: Install and provide the "ws" package:
   }
   /**
    * Sets a callback that receives lifecycle events for internal heartbeat messages.
-   * Useful for instrumenting connection health (e.g. sent/ok/timeout/disconnected).
+   * Useful for instrumenting connection health (e.g. sent/ok/timeout).
    *
    * @category Realtime
    */
@@ -1920,7 +2055,7 @@ Option 2: Install and provide the "ws" package:
    * Perform the actual auth operation
    * @internal
    */
-  async _performAuth(token = null) {
+  async _performAuth(token, authGeneration) {
     let tokenToSend;
     let isManualToken = false;
     if (token) {
@@ -1936,10 +2071,13 @@ Option 2: Install and provide the "ws" package:
     } else {
       tokenToSend = this.accessTokenValue;
     }
-    if (isManualToken) {
-      this._manuallySetToken = true;
-    } else if (this.accessToken) {
+    if (authGeneration !== this._authGeneration) {
+      return;
+    }
+    if (this.accessToken) {
       this._manuallySetToken = false;
+    } else if (isManualToken) {
+      this._manuallySetToken = true;
     }
     if (this.accessTokenValue != tokenToSend) {
       this.accessTokenValue = tokenToSend;
@@ -1948,7 +2086,7 @@ Option 2: Install and provide the "ws" package:
           access_token: tokenToSend,
           version: DEFAULT_VERSION
         };
-        tokenToSend && channel.updateJoinPayload(payload);
+        channel.updateJoinPayload(payload);
         if (channel.joinedOnce && channel.channelAdapter.isJoined()) {
           channel.channelAdapter.push(CHANNEL_EVENTS.access_token, {
             access_token: tokenToSend
@@ -2008,6 +2146,8 @@ Option 2: Install and provide the "ws" package:
   /** @internal */
   _wrapHeartbeatCallback(heartbeatCallback) {
     return (status, latency) => {
+      if (status === "disconnected")
+        return;
       if (status == "sent")
         this._setAuthSafely();
       if (heartbeatCallback)

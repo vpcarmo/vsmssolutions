@@ -3,11 +3,12 @@ import { c as composeEventHandlers } from "./radix-ui__primitive.mjs";
 import { u as useComposedRefs } from "./radix-ui__react-compose-refs.mjs";
 import { c as createContextScope } from "./radix-ui__react-context.mjs";
 import { u as useControllableState } from "./@radix-ui/react-use-controllable-state+[...].mjs";
-import { u as usePrevious } from "./radix-ui__react-use-previous.mjs";
 import { u as useSize } from "./radix-ui__react-use-size.mjs";
 import { P as Primitive } from "./radix-ui__react-primitive.mjs";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var SWITCH_NAME = "Switch";
-var [createSwitchContext] = createContextScope(SWITCH_NAME);
+var [createSwitchContext, createSwitchScope] = createContextScope(SWITCH_NAME);
 var [SwitchProviderImpl, useSwitchContext] = createSwitchContext(SWITCH_NAME);
 function SwitchProvider(props) {
   const {
@@ -33,6 +34,10 @@ function SwitchProvider(props) {
   const [control, setControl] = reactExports.useState(null);
   const [bubbleInput, setBubbleInput] = reactExports.useState(null);
   const hasConsumerStoppedPropagationRef = reactExports.useRef(false);
+  const [userInteractionCount, onUserInteraction] = reactExports.useReducer(
+    (count) => count + 1,
+    0
+  );
   const isFormControl = control ? !!form || !!control.closest("form") : (
     // We set this to true by default so that events bubble to forms without JS (SSR)
     true
@@ -47,6 +52,8 @@ function SwitchProvider(props) {
     form,
     value,
     hasConsumerStoppedPropagationRef,
+    userInteractionCount,
+    onUserInteraction,
     required,
     defaultChecked,
     isFormControl,
@@ -55,10 +62,13 @@ function SwitchProvider(props) {
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx(SwitchProviderImpl, { scope: __scopeSwitch, ...context, children: isFunction(internal_do_not_use_render) ? internal_do_not_use_render(context) : children });
 }
+__name(SwitchProvider, "SwitchProvider");
 var TRIGGER_NAME = "SwitchTrigger";
-var SwitchTrigger = reactExports.forwardRef(
-  ({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) => {
+var SwitchTrigger = /* @__PURE__ */ reactExports.forwardRef(
+  /* @__PURE__ */ __name(function SwitchTrigger2({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) {
     const {
+      control,
+      form,
       value,
       disabled,
       checked,
@@ -66,10 +76,20 @@ var SwitchTrigger = reactExports.forwardRef(
       setControl,
       setChecked,
       hasConsumerStoppedPropagationRef,
+      onUserInteraction,
       isFormControl,
       bubbleInput
     } = useSwitchContext(TRIGGER_NAME, __scopeSwitch);
     const composedRefs = useComposedRefs(forwardedRef, setControl);
+    const initialCheckedStateRef = reactExports.useRef(checked);
+    reactExports.useEffect(() => {
+      const associatedForm = form ? control?.ownerDocument.getElementById(form) : control?.form;
+      if (associatedForm instanceof HTMLFormElement) {
+        const reset = /* @__PURE__ */ __name(() => setChecked(initialCheckedStateRef.current), "reset");
+        associatedForm.addEventListener("reset", reset);
+        return () => associatedForm.removeEventListener("reset", reset);
+      }
+    }, [control, form, setChecked]);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       Primitive.button,
       {
@@ -84,6 +104,7 @@ var SwitchTrigger = reactExports.forwardRef(
         ...switchProps,
         ref: composedRefs,
         onClick: composeEventHandlers(onClick, (event) => {
+          onUserInteraction();
           setChecked((prevChecked) => !prevChecked);
           if (bubbleInput && isFormControl) {
             hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
@@ -92,11 +113,11 @@ var SwitchTrigger = reactExports.forwardRef(
         })
       }
     );
-  }
+  }, "SwitchTrigger")
 );
-SwitchTrigger.displayName = TRIGGER_NAME;
-var Switch = reactExports.forwardRef(
-  (props, forwardedRef) => {
+var Switch = /* @__PURE__ */ reactExports.forwardRef(
+  // blank line to reduce diff noise
+  /* @__PURE__ */ __name(function Switch2(props, forwardedRef) {
     const {
       __scopeSwitch,
       name,
@@ -139,12 +160,11 @@ var Switch = reactExports.forwardRef(
         ] })
       }
     );
-  }
+  }, "Switch")
 );
-Switch.displayName = SWITCH_NAME;
 var THUMB_NAME = "SwitchThumb";
-var SwitchThumb = reactExports.forwardRef(
-  (props, forwardedRef) => {
+var SwitchThumb = /* @__PURE__ */ reactExports.forwardRef(
+  /* @__PURE__ */ __name(function SwitchThumb2(props, forwardedRef) {
     const { __scopeSwitch, ...thumbProps } = props;
     const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -156,15 +176,16 @@ var SwitchThumb = reactExports.forwardRef(
         ref: forwardedRef
       }
     );
-  }
+  }, "SwitchThumb")
 );
-SwitchThumb.displayName = THUMB_NAME;
 var BUBBLE_INPUT_NAME = "SwitchBubbleInput";
-var SwitchBubbleInput = reactExports.forwardRef(
-  ({ __scopeSwitch, ...props }, forwardedRef) => {
+var SwitchBubbleInput = /* @__PURE__ */ reactExports.forwardRef(
+  // blank line to reduce diff noise
+  /* @__PURE__ */ __name(function SwitchBubbleInput2({ __scopeSwitch, onClick, ...props }, forwardedRef) {
     const {
       control,
       hasConsumerStoppedPropagationRef,
+      userInteractionCount,
       checked,
       defaultChecked,
       required,
@@ -176,8 +197,10 @@ var SwitchBubbleInput = reactExports.forwardRef(
       setBubbleInput
     } = useSwitchContext(BUBBLE_INPUT_NAME, __scopeSwitch);
     const composedRefs = useComposedRefs(forwardedRef, setBubbleInput);
-    const prevChecked = usePrevious(checked);
     const controlSize = useSize(control);
+    const shouldStopClickPropagationRef = reactExports.useRef(false);
+    const prevCheckedRef = reactExports.useRef(checked);
+    const prevUserInteractionCountRef = reactExports.useRef(userInteractionCount);
     reactExports.useEffect(() => {
       const input = bubbleInput;
       if (!input) return;
@@ -187,13 +210,19 @@ var SwitchBubbleInput = reactExports.forwardRef(
         "checked"
       );
       const setChecked = descriptor.set;
-      const bubbles = !hasConsumerStoppedPropagationRef.current;
-      if (prevChecked !== checked && setChecked) {
+      const isUserInteraction = userInteractionCount !== prevUserInteractionCountRef.current;
+      prevUserInteractionCountRef.current = userInteractionCount;
+      const checkedChanged = prevCheckedRef.current !== checked;
+      prevCheckedRef.current = checked;
+      const bubbles = !(isUserInteraction && hasConsumerStoppedPropagationRef.current);
+      if (checkedChanged && setChecked) {
+        shouldStopClickPropagationRef.current = !isUserInteraction;
         const event = new Event("click", { bubbles });
         setChecked.call(input, checked);
         input.dispatchEvent(event);
+        shouldStopClickPropagationRef.current = false;
       }
-    }, [bubbleInput, prevChecked, checked, hasConsumerStoppedPropagationRef]);
+    }, [bubbleInput, checked, hasConsumerStoppedPropagationRef, userInteractionCount]);
     const defaultCheckedRef = reactExports.useRef(checked);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       Primitive.input,
@@ -209,6 +238,11 @@ var SwitchBubbleInput = reactExports.forwardRef(
         ...props,
         tabIndex: -1,
         ref: composedRefs,
+        onClick: composeEventHandlers(onClick, (event) => {
+          if (shouldStopClickPropagationRef.current) {
+            event.stopPropagation();
+          }
+        }),
         style: {
           ...props.style,
           ...controlSize,
@@ -223,15 +257,16 @@ var SwitchBubbleInput = reactExports.forwardRef(
         }
       }
     );
-  }
+  }, "SwitchBubbleInput")
 );
-SwitchBubbleInput.displayName = BUBBLE_INPUT_NAME;
 function isFunction(value) {
   return typeof value === "function";
 }
+__name(isFunction, "isFunction");
 function getState(checked) {
   return checked ? "checked" : "unchecked";
 }
+__name(getState, "getState");
 export {
   Switch as S,
   SwitchThumb as a

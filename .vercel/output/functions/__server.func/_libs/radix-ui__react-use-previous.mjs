@@ -1,4 +1,6 @@
 import { r as reactExports } from "./react.mjs";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 function usePrevious(value) {
   const ref = reactExports.useRef({ value, previous: value });
   return reactExports.useMemo(() => {
@@ -9,6 +11,7 @@ function usePrevious(value) {
     return ref.current.previous;
   }, [value]);
 }
+__name(usePrevious, "usePrevious");
 export {
   usePrevious as u
 };

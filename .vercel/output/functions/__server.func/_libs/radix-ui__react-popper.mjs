@@ -1,6 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from "./react.mjs";
 import { u as useFloating, o as offset, s as shift, f as flip, a as size, b as arrow, h as hide, l as limitShift } from "./floating-ui__react-dom.mjs";
-import { R as Root } from "./radix-ui__react-arrow.mjs";
 import { u as useComposedRefs } from "./radix-ui__react-compose-refs.mjs";
 import { c as createContextScope } from "./radix-ui__react-context.mjs";
 import { P as Primitive } from "./radix-ui__react-primitive.mjs";
@@ -8,10 +7,12 @@ import { u as useCallbackRef } from "./@radix-ui/react-use-callback-ref+[...].mj
 import { u as useLayoutEffect2 } from "./@radix-ui/react-use-layout-effect+[...].mjs";
 import { u as useSize } from "./radix-ui__react-use-size.mjs";
 import { d as autoUpdate } from "./floating-ui__dom.mjs";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var POPPER_NAME = "Popper";
 var [createPopperContext, createPopperScope] = createContextScope(POPPER_NAME);
 var [PopperProvider, usePopperContext] = createPopperContext(POPPER_NAME);
-var Popper = (props) => {
+var Popper = /* @__PURE__ */ __name((props) => {
   const { __scopePopper, children } = props;
   const [anchor, setAnchor] = reactExports.useState(null);
   const [placementState, setPlacementState] = reactExports.useState(void 0);
@@ -26,11 +27,10 @@ var Popper = (props) => {
       children
     }
   );
-};
-Popper.displayName = POPPER_NAME;
+}, "Popper");
 var ANCHOR_NAME = "PopperAnchor";
-var PopperAnchor = reactExports.forwardRef(
-  (props, forwardedRef) => {
+var PopperAnchor = /* @__PURE__ */ reactExports.forwardRef(
+  /* @__PURE__ */ __name(function PopperAnchor2(props, forwardedRef) {
     const { __scopePopper, virtualRef, ...anchorProps } = props;
     const context = usePopperContext(ANCHOR_NAME, __scopePopper);
     const ref = reactExports.useRef(null);
@@ -68,13 +68,12 @@ var PopperAnchor = reactExports.forwardRef(
         ref: composedRefs
       }
     );
-  }
+  }, "PopperAnchor")
 );
-PopperAnchor.displayName = ANCHOR_NAME;
 var CONTENT_NAME = "PopperContent";
 var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME);
-var PopperContent = reactExports.forwardRef(
-  (props, forwardedRef) => {
+var PopperContent = /* @__PURE__ */ reactExports.forwardRef(
+  /* @__PURE__ */ __name(function PopperContent2(props, forwardedRef) {
     const {
       __scopePopper,
       side = "bottom",
@@ -93,7 +92,7 @@ var PopperContent = reactExports.forwardRef(
     } = props;
     const context = usePopperContext(CONTENT_NAME, __scopePopper);
     const [content, setContent] = reactExports.useState(null);
-    const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
+    const composedRefs = useComposedRefs(forwardedRef, setContent);
     const [arrow$1, setArrow] = reactExports.useState(null);
     const arrowSize = useSize(arrow$1);
     const arrowWidth = arrowSize?.width ?? 0;
@@ -112,12 +111,12 @@ var PopperContent = reactExports.forwardRef(
       // default to `fixed` strategy so users don't have to pick and we also avoid focus scroll issues
       strategy: "fixed",
       placement: desiredPlacement,
-      whileElementsMounted: (...args) => {
+      whileElementsMounted: /* @__PURE__ */ __name((...args) => {
         const cleanup = autoUpdate(...args, {
           animationFrame: updatePositionStrategy === "always"
         });
         return cleanup;
-      },
+      }, "whileElementsMounted"),
       elements: {
         reference: context.anchor
       },
@@ -132,14 +131,14 @@ var PopperContent = reactExports.forwardRef(
         avoidCollisions && flip({ ...detectOverflowOptions }),
         size({
           ...detectOverflowOptions,
-          apply: ({ elements, rects, availableWidth, availableHeight }) => {
+          apply: /* @__PURE__ */ __name(({ elements, rects, availableWidth, availableHeight }) => {
             const { width: anchorWidth, height: anchorHeight } = rects.reference;
             const contentStyle = elements.floating.style;
             contentStyle.setProperty("--radix-popper-available-width", `${availableWidth}px`);
             contentStyle.setProperty("--radix-popper-available-height", `${availableHeight}px`);
             contentStyle.setProperty("--radix-popper-anchor-width", `${anchorWidth}px`);
             contentStyle.setProperty("--radix-popper-anchor-height", `${anchorHeight}px`);
-          }
+          }, "apply")
         }),
         arrow$1 && arrow({ element: arrow$1, padding: arrowPadding }),
         transformOrigin({ arrowWidth, arrowHeight }),
@@ -221,9 +220,10 @@ var PopperContent = reactExports.forwardRef(
                 ref: composedRefs,
                 style: {
                   ...contentProps.style,
-                  // if the PopperContent hasn't been placed yet (not all measurements done)
-                  // we prevent animations so that users's animation don't kick in too early referring wrong sides
-                  animation: !isPositioned ? "none" : void 0
+                  // if the PopperContent hasn't been placed yet (not all
+                  // measurements done) we prevent animations so that users'
+                  // animations don't kick in too early from the wrong sides.
+                  animation: !isPositioned ? "none" : contentProps.style?.animation
                 }
               }
             )
@@ -231,68 +231,13 @@ var PopperContent = reactExports.forwardRef(
         )
       }
     );
-  }
+  }, "PopperContent")
 );
-PopperContent.displayName = CONTENT_NAME;
-var ARROW_NAME = "PopperArrow";
-var OPPOSITE_SIDE = {
-  top: "bottom",
-  right: "left",
-  bottom: "top",
-  left: "right"
-};
-var PopperArrow = reactExports.forwardRef(function PopperArrow2(props, forwardedRef) {
-  const { __scopePopper, ...arrowProps } = props;
-  const contentContext = useContentContext(ARROW_NAME, __scopePopper);
-  const baseSide = OPPOSITE_SIDE[contentContext.placedSide];
-  return (
-    // we have to use an extra wrapper because `ResizeObserver` (used by `useSize`)
-    // doesn't report size as we'd expect on SVG elements.
-    // it reports their bounding box which is effectively the largest path inside the SVG.
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "span",
-      {
-        ref: contentContext.onArrowChange,
-        style: {
-          position: "absolute",
-          left: contentContext.arrowX,
-          top: contentContext.arrowY,
-          [baseSide]: 0,
-          transformOrigin: {
-            top: "",
-            right: "0 0",
-            bottom: "center 0",
-            left: "100% 0"
-          }[contentContext.placedSide],
-          transform: {
-            top: "translateY(100%)",
-            right: "translateY(50%) rotate(90deg) translateX(-50%)",
-            bottom: `rotate(180deg)`,
-            left: "translateY(50%) rotate(-90deg) translateX(50%)"
-          }[contentContext.placedSide],
-          visibility: contentContext.shouldHideArrow ? "hidden" : void 0
-        },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Root,
-          {
-            ...arrowProps,
-            ref: forwardedRef,
-            style: {
-              ...arrowProps.style,
-              // ensures the element can be measured correctly (mostly for if SVG)
-              display: "block"
-            }
-          }
-        )
-      }
-    )
-  );
-});
-PopperArrow.displayName = ARROW_NAME;
 function isNotNull(value) {
   return value !== null;
 }
-var transformOrigin = (options) => ({
+__name(isNotNull, "isNotNull");
+var transformOrigin = /* @__PURE__ */ __name((options) => ({
   name: "transformOrigin",
   options,
   fn(data) {
@@ -322,19 +267,18 @@ var transformOrigin = (options) => ({
     }
     return { data: { x, y } };
   }
-});
+}), "transformOrigin");
 function getSideAndAlignFromPlacement(placement) {
   const [side, align = "center"] = placement.split("-");
   return [side, align];
 }
+__name(getSideAndAlignFromPlacement, "getSideAndAlignFromPlacement");
 var Root2 = Popper;
 var Anchor = PopperAnchor;
 var Content = PopperContent;
-var Arrow = PopperArrow;
 export {
   Anchor as A,
   Content as C,
   Root2 as R,
-  Arrow as a,
   createPopperScope as c
 };
