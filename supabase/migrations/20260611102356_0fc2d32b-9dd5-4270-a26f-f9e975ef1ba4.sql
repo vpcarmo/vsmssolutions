@@ -125,6 +125,76 @@ CREATE POLICY ur_super_write ON public.user_roles FOR ALL TO authenticated
   WITH CHECK (public.has_role(auth.uid(), 'super_admin'));
 
 -- =====================================================================
+-- PRODUCTS — estrutura base
+-- =====================================================================
+
+CREATE TYPE public.product_type AS ENUM ('site', 'saas', 'ia_app');
+CREATE TYPE public.product_status AS ENUM ('active', 'inactive', 'archived');
+
+CREATE TABLE public.products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  type public.product_type NOT NULL,
+  description TEXT,
+  status public.product_status NOT NULL DEFAULT 'active',
+  primary_domain TEXT,
+  settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.products TO authenticated;
+GRANT ALL ON public.products TO service_role;
+
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+CREATE TRIGGER trg_products_updated
+BEFORE UPDATE ON public.products
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+CREATE INDEX idx_products_status
+ON public.products(status);
+
+CREATE INDEX idx_products_slug
+ON public.products(slug);
+
+
+-- =====================================================================
+-- POSTS — estrutura base
+-- =====================================================================
+
+CREATE TABLE public.posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  slug TEXT NOT NULL,
+  title TEXT NOT NULL,
+  excerpt TEXT,
+  content TEXT,
+  status TEXT NOT NULL DEFAULT 'draft',
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.posts TO authenticated;
+GRANT ALL ON public.posts TO service_role;
+
+ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX idx_posts_product
+ON public.posts(product_id);
+
+CREATE INDEX idx_posts_status
+ON public.posts(status);
+
+CREATE TRIGGER trg_posts_updated
+BEFORE UPDATE ON public.posts
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+-- =====================================================================
 -- PRODUCTS — adiciona tenant_id
 -- =====================================================================
 ALTER TABLE public.products ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
@@ -163,9 +233,8 @@ ALTER TABLE public.posts ALTER COLUMN tenant_id SET NOT NULL;
 ALTER TABLE public.posts ALTER COLUMN tenant_id SET DEFAULT public.current_tenant_id();
 
 ALTER TABLE public.posts ADD COLUMN content_json JSONB NOT NULL DEFAULT '{"blocks":[]}'::jsonb;
-UPDATE public.posts SET content_json = jsonb_build_object(
-  'blocks', COALESCE((SELECT jsonb_agg(jsonb_build_object('type','paragraph','text',p)) FROM unnest(content) p), '[]'::jsonb)
-);
+UPDATE public.posts
+SET content_json = '{"blocks":[]}'::jsonb;
 ALTER TABLE public.posts DROP COLUMN content;
 ALTER TABLE public.posts RENAME COLUMN content_json TO content;
 
@@ -178,7 +247,6 @@ CREATE POLICY posts_admin_write ON public.posts FOR ALL TO authenticated
   USING (public.is_tenant_member(tenant_id, auth.uid()) AND public.is_admin(auth.uid()))
   WITH CHECK (public.is_tenant_member(tenant_id, auth.uid()) AND public.is_admin(auth.uid()));
 
-CREATE TRIGGER trg_posts_updated BEFORE UPDATE ON public.posts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =====================================================================
 -- PAGES
