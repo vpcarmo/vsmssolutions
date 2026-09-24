@@ -11,6 +11,21 @@ type Social = { linkedin?: string; github?: string; instagram?: string; twitter?
 type Contact = { email?: string };
 type Brand = { name?: string; logo_url?: string | null };
 
+function PublicFooterLink({ to, children }: { to: string; children: React.ReactNode }) {
+  if (to.startsWith("/") && !to.startsWith("//")) {
+    return (
+      <Link to={to as never} className="hover:text-foreground">
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={to} className="hover:text-foreground">
+      {children}
+    </a>
+  );
+}
+
 export function Footer() {
   const { data } = useQuery({
     queryKey: ["site-config"],
@@ -73,7 +88,7 @@ export function Footer() {
               <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                 {col.links.map((l) => (
                   <li key={l.to}>
-                    <a href={l.to} className="hover:text-foreground">{l.label}</a>
+                    <PublicFooterLink to={l.to}>{l.label}</PublicFooterLink>
                   </li>
                 ))}
               </ul>

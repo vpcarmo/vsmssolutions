@@ -9,6 +9,31 @@ type NavItem = { label: string; to: string };
 type Brand = { name?: string; tagline?: string; logo_url?: string | null };
 type Nav = { items?: NavItem[]; cta?: NavItem };
 
+function PublicNavLink({
+  to,
+  children,
+  className,
+  onClick,
+}: {
+  to: string;
+  children: React.ReactNode;
+  className: string;
+  onClick?: () => void;
+}) {
+  if (to.startsWith("/") && !to.startsWith("//")) {
+    return (
+      <Link to={to as never} className={className} onClick={onClick}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={to} className={className} onClick={onClick}>
+      {children}
+    </a>
+  );
+}
+
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -50,23 +75,23 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">
           {items.map((item) => (
-            <a
+            <PublicNavLink
               key={item.to}
-              href={item.to}
+              to={item.to}
               className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {item.label}
-            </a>
+            </PublicNavLink>
           ))}
         </nav>
 
         <div className="hidden md:block">
-          <a
-            href={cta.to}
+          <PublicNavLink
+            to={cta.to}
             className="inline-flex items-center rounded-md bg-gradient-brand px-4 py-2 text-sm font-medium text-brand-foreground shadow-glow transition-transform hover:-translate-y-0.5"
           >
             {cta.label}
-          </a>
+          </PublicNavLink>
         </div>
 
         <button
@@ -85,22 +110,22 @@ export function Header() {
         <div id="mobile-nav" className="glass border-t border-border md:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-6 py-3" aria-label="Mobile">
             {items.map((item) => (
-              <a
+              <PublicNavLink
                 key={item.to}
-                href={item.to}
+                to={item.to}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
               >
                 {item.label}
-              </a>
+              </PublicNavLink>
             ))}
-            <a
-              href={cta.to}
+            <PublicNavLink
+              to={cta.to}
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex items-center justify-center rounded-md bg-gradient-brand px-4 py-2.5 text-sm font-medium text-brand-foreground"
             >
               {cta.label}
-            </a>
+            </PublicNavLink>
           </nav>
         </div>
       )}

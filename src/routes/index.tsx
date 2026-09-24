@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import * as LucideIcons from "lucide-react";
-import { ArrowRight, Sparkles, Quote, Boxes } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  Boxes,
+  Layers,
+  LifeBuoy,
+  Lightbulb,
+  PlugZap,
+  Quote,
+  Sparkles,
+  Workflow,
+} from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { getPublicPage, listPublicProducts } from "@/lib/site/site.functions";
 
@@ -44,9 +54,33 @@ type HomeContent = {
   cta?: CtaBlock;
 };
 
+const dynamicIcons = {
+  bot: Bot,
+  layers: Layers,
+  "life-buoy": LifeBuoy,
+  lightbulb: Lightbulb,
+  plug: PlugZap,
+  workflow: Workflow,
+} as const;
+
 function Icon({ name, className }: { name?: string; className?: string }) {
-  const I = (name && (LucideIcons as any)[name]) || Boxes;
+  const I = (name && dynamicIcons[name as keyof typeof dynamicIcons]) || Boxes;
   return <I className={className} />;
+}
+
+function PublicHomeLink({
+  to,
+  className,
+  children,
+}: {
+  to: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (to.startsWith("/") && !to.startsWith("//")) {
+    return <Link to={to as never} className={className}>{children}</Link>;
+  }
+  return <a href={to} className={className}>{children}</a>;
 }
 
 function Home() {
@@ -91,9 +125,9 @@ function Home() {
             {hero.ctas && hero.ctas.length > 0 && (
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 {hero.ctas.map((c) => (
-                  <a
+                  <PublicHomeLink
                     key={c.label}
-                    href={c.to}
+                    to={c.to}
                     className={
                       c.variant === "secondary"
                         ? "inline-flex items-center gap-2 rounded-md border border-border bg-surface/60 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-surface"
@@ -101,7 +135,7 @@ function Home() {
                     }
                   >
                     {c.label} {c.variant !== "secondary" && <ArrowRight className="h-4 w-4" />}
-                  </a>
+                  </PublicHomeLink>
                 ))}
               </div>
             )}
@@ -250,9 +284,9 @@ function Home() {
               {finalCta.ctas && finalCta.ctas.length > 0 && (
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   {finalCta.ctas.map((c) => (
-                    <a
+                    <PublicHomeLink
                       key={c.label}
-                      href={c.to}
+                      to={c.to}
                       className={
                         c.variant === "secondary"
                           ? "inline-flex items-center gap-2 rounded-md border border-border bg-surface/60 px-6 py-3 text-sm font-medium backdrop-blur hover:bg-surface"
@@ -260,7 +294,7 @@ function Home() {
                       }
                     >
                       {c.label} {c.variant !== "secondary" && <ArrowRight className="h-4 w-4" />}
-                    </a>
+                    </PublicHomeLink>
                   ))}
                 </div>
               )}
