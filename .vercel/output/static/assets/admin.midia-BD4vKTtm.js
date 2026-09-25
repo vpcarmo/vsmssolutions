@@ -1,0 +1,1 @@
+import{j as s}from"./index-P5kJyIWJ.js";const o=()=>s.jsxs("div",{className:"mx-auto max-w-4xl",children:[s.jsx("h1",{className:"font-display text-2xl font-bold capitalize",children:"midia"}),s.jsx("p",{className:"mt-2 text-sm text-muted-foreground",children:"Módulo em construção — base de dados e regras de acesso já provisionadas."})]});export{o as component};
