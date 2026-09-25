@@ -6,19 +6,21 @@ import { submitContact } from "@/lib/site/contact.functions";
 
 export const Route = createFileRoute("/contato")({
   loader: async ({ context }) => {
-    await Promise.all([
-      context.queryClient.ensureQueryData({
-        queryKey: ["page", "contato"],
-        queryFn: () => getPublicPage({ data: { slug: "contato" } }),
-        staleTime: 60_000,
-      }),
-      context.queryClient.ensureQueryData({
-        queryKey: ["site-config"],
-        queryFn: () => getSiteConfig(),
-        staleTime: 5 * 60_000,
-      }),
-    ]);
-  },
+  const [page, cfg] = await Promise.all([
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "contato"],
+      queryFn: () => getPublicPage({ data: { slug: "contato" } }),
+      staleTime: 60_000,
+    }),
+    context.queryClient.ensureQueryData({
+      queryKey: ["site-config"],
+      queryFn: () => getSiteConfig(),
+      staleTime: 5 * 60_000,
+    }),
+  ]);
+
+  return { page, cfg };
+},
   head: () => ({
     meta: [
       { title: "Contato — VSMS Solutions" },
