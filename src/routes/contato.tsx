@@ -1,11 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle2 } from "lucide-react";
 import { getPublicPage, getSiteConfig } from "@/lib/site/site.functions";
 import { submitContact } from "@/lib/site/contact.functions";
 
 export const Route = createFileRoute("/contato")({
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["page", "contato"],
+        queryFn: () => getPublicPage({ data: { slug: "contato" } }),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["site-config"],
+        queryFn: () => getSiteConfig(),
+        staleTime: 5 * 60_000,
+      }),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: "Contato — VSMS Solutions" },
@@ -23,16 +36,7 @@ function Contato() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: page } = useQuery({
-    queryKey: ["page", "contato"],
-    queryFn: () => getPublicPage({ data: { slug: "contato" } }),
-    staleTime: 60_000,
-  });
-  const { data: cfg } = useQuery({
-    queryKey: ["site-config"],
-    queryFn: () => getSiteConfig(),
-    staleTime: 5 * 60_000,
-  });
+  const { page, cfg } = Route.useLoaderData();
   const contact = (cfg?.["site.contact"] ?? {}) as { email?: string; phone?: string; whatsapp?: string; address?: string };
   const title = page?.title ?? "Vamos conversar";
   const intro = page?.excerpt ?? "Quer adotar um produto VSMS, integrar nossas plataformas ou tirar dúvidas? Respondemos em até 1 dia útil.";

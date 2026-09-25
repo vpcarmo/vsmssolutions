@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Github, Linkedin, Instagram, Mail } from "lucide-react";
 import logoAsset from "@/assets/logo.png";
-import { getSiteConfig, SITE_DEFAULTS } from "@/lib/site/site.functions";
+import { SITE_DEFAULTS, type SiteConfig } from "@/lib/site/site.functions";
 
 type LinkItem = { label: string; to: string };
 type Column = { title: string; links: LinkItem[] };
@@ -26,17 +25,11 @@ function PublicFooterLink({ to, children }: { to: string; children: React.ReactN
   );
 }
 
-export function Footer() {
-  const { data } = useQuery({
-    queryKey: ["site-config"],
-    queryFn: () => getSiteConfig(),
-    staleTime: 5 * 60_000,
-  });
-
-  const brand = (data?.["site.brand"] ?? SITE_DEFAULTS["site.brand"]) as Brand;
-  const footer = (data?.["site.footer"] ?? SITE_DEFAULTS["site.footer"]) as FooterCfg;
-  const social = (data?.["site.social"] ?? SITE_DEFAULTS["site.social"]) as Social;
-  const contact = (data?.["site.contact"] ?? SITE_DEFAULTS["site.contact"]) as Contact;
+export function Footer({ config }: { config: SiteConfig }) {
+  const brand = (config["site.brand"] ?? SITE_DEFAULTS["site.brand"]) as Brand;
+  const footer = (config["site.footer"] ?? SITE_DEFAULTS["site.footer"]) as FooterCfg;
+  const social = (config["site.social"] ?? SITE_DEFAULTS["site.social"]) as Social;
+  const contact = (config["site.contact"] ?? SITE_DEFAULTS["site.contact"]) as Contact;
 
   const brandName = brand.name || "VSMS Solutions";
   const logoSrc = brand.logo_url || logoAsset;

@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Bot,
@@ -16,6 +15,21 @@ import heroBg from "@/assets/hero-bg.jpg";
 import { getPublicPage, listPublicProducts } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    const [pageRow, products] = await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["page", "home"],
+        queryFn: () => getPublicPage({ data: { slug: "home" } }),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["public-products"],
+        queryFn: () => listPublicProducts(),
+        staleTime: 60_000,
+      }),
+    ]);
+    return { pageRow, products };
+  },
   head: () => ({
     meta: [
       { title: "VSMS Solutions — Produtos digitais, SaaS e IA" },
@@ -84,16 +98,7 @@ function PublicHomeLink({
 }
 
 function Home() {
-  const { data: pageRow } = useQuery({
-    queryKey: ["page", "home"],
-    queryFn: () => getPublicPage({ data: { slug: "home" } }),
-    staleTime: 60_000,
-  });
-  const { data: products = [] } = useQuery({
-    queryKey: ["public-products"],
-    queryFn: () => listPublicProducts(),
-    staleTime: 60_000,
-  });
+  const { pageRow, products } = Route.useLoaderData();
 
   const content: HomeContent = (pageRow?.content as HomeContent) || {};
   const hero = content.hero ?? {};

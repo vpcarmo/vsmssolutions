@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Menu, X } from "lucide-react";
 import logoAsset from "@/assets/logo.png";
-import { getSiteConfig, SITE_DEFAULTS } from "@/lib/site/site.functions";
+import { SITE_DEFAULTS, type SiteConfig } from "@/lib/site/site.functions";
 
 type NavItem = { label: string; to: string };
 type Brand = { name?: string; tagline?: string; logo_url?: string | null };
@@ -34,19 +33,13 @@ function PublicNavLink({
   );
 }
 
-export function Header() {
+export function Header({ config }: { config: SiteConfig }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const { data } = useQuery({
-    queryKey: ["site-config"],
-    queryFn: () => getSiteConfig(),
-    staleTime: 5 * 60_000,
-  });
-
-  const brand = (data?.["site.brand"] ?? SITE_DEFAULTS["site.brand"]) as Brand;
-  const nav = (data?.["site.navigation"] ?? SITE_DEFAULTS["site.navigation"]) as Nav;
-  const items: NavItem[] = nav.items?.length ? nav.items : (SITE_DEFAULTS["site.navigation"] as Nav).items!;
+  const brand = (config["site.brand"] ?? SITE_DEFAULTS["site.brand"]) as Brand;
+  const nav = (config["site.navigation"] ?? SITE_DEFAULTS["site.navigation"]) as Nav;
+  const items: NavItem[] = nav.items ?? (SITE_DEFAULTS["site.navigation"] as Nav).items!;
   const cta = nav.cta ?? (SITE_DEFAULTS["site.navigation"] as Nav).cta!;
   const logoSrc = brand.logo_url || logoAsset;
   const brandName = brand.name || "VSMS Solutions";

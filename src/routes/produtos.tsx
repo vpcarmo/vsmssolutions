@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Boxes, ArrowRight, Sparkles } from "lucide-react";
 import { listPublicProducts } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/produtos")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["public-products"],
+      queryFn: () => listPublicProducts(),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Produtos — Ecossistema VSMS Solutions" },
@@ -18,11 +23,7 @@ export const Route = createFileRoute("/produtos")({
 });
 
 function Produtos() {
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["public-products"],
-    queryFn: () => listPublicProducts(),
-    staleTime: 60_000,
-  });
+  const products = Route.useLoaderData();
 
   return (
     <>
@@ -44,9 +45,7 @@ function Produtos() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-24">
-        {isLoading ? (
-          <p className="text-center text-sm text-muted-foreground">Carregando produtos…</p>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">Nenhum produto disponível no momento.</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useLoaderData } from "@tanstack/react-router";
 import { LegalPage } from "@/components/site/LegalPage";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 type LegalContent = { lead?: string; sections?: { heading?: string; body: string }[] };
 
-function makeLegal(slug: "privacidade" | "cookies" | "termos", fallbackTitle: string, fallbackLead: string) {
+function makeLegal(
+  fallbackTitle: string,
+  fallbackLead: string,
+  routeId: "/privacidade" | "/cookies" | "/termos",
+) {
   return function LegalRoute() {
-    const { data: page } = useQuery({
-      queryKey: ["page", slug],
-      queryFn: () => getPublicPage({ data: { slug } }),
-      staleTime: 60_000,
-    });
+    const page = useLoaderData({ from: routeId });
     const c = (page?.content ?? {}) as LegalContent;
     return (
       <LegalPage title={page?.title ?? fallbackTitle} lead={c.lead ?? page?.excerpt ?? fallbackLead}>
@@ -27,6 +27,12 @@ function makeLegal(slug: "privacidade" | "cookies" | "termos", fallbackTitle: st
 }
 
 export const Route = createFileRoute("/privacidade")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "privacidade"],
+      queryFn: () => getPublicPage({ data: { slug: "privacidade" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Política de Privacidade — VSMS Solutions" },
@@ -35,5 +41,5 @@ export const Route = createFileRoute("/privacidade")({
     ],
     links: [{ rel: "canonical", href: "https://vsms.com.br/privacidade" }],
   }),
-  component: makeLegal("privacidade", "Política de Privacidade", "Como tratamos seus dados conforme a LGPD."),
+  component: makeLegal("Política de Privacidade", "Como tratamos seus dados conforme a LGPD.", "/privacidade"),
 });

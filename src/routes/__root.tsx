@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { getSiteConfig } from "@/lib/site/site.functions";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 
@@ -76,6 +77,12 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["site-config"],
+      queryFn: () => getSiteConfig(),
+      staleTime: 5 * 60_000,
+    }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -144,6 +151,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const siteConfig = Route.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isInternal = pathname.startsWith("/admin") || pathname.startsWith("/auth");
 
@@ -163,11 +171,11 @@ function RootComponent() {
       >
         Pular para o conteúdo
       </a>
-      <Header />
+      <Header config={siteConfig} />
       <main id="main" className="min-h-dvh pt-16">
         <Outlet />
       </main>
-      <Footer />
+      <Footer config={siteConfig} />
     </QueryClientProvider>
   );
 }

@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { LegalPage } from "@/components/site/LegalPage";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 type LegalContent = { lead?: string; sections?: { heading?: string; body: string }[] };
 
 export const Route = createFileRoute("/cookies")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "cookies"],
+      queryFn: () => getPublicPage({ data: { slug: "cookies" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Política de Cookies — VSMS Solutions" },
@@ -18,11 +23,7 @@ export const Route = createFileRoute("/cookies")({
 });
 
 function CookiesPage() {
-  const { data: page } = useQuery({
-    queryKey: ["page", "cookies"],
-    queryFn: () => getPublicPage({ data: { slug: "cookies" } }),
-    staleTime: 60_000,
-  });
+  const page = Route.useLoaderData();
   const c = (page?.content ?? {}) as LegalContent;
   return (
     <LegalPage title={page?.title ?? "Política de Cookies"} lead={c.lead ?? page?.excerpt ?? "Uso de cookies neste site."}>

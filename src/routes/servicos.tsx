@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { PlugZap, Layers, Bot, LifeBuoy, Lightbulb, Workflow, ArrowRight, type LucideIcon } from "lucide-react";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/servicos")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "servicos"],
+      queryFn: () => getPublicPage({ data: { slug: "servicos" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Serviços de apoio — VSMS Solutions" },
@@ -36,11 +41,7 @@ type ServicesContent = {
 };
 
 function Servicos() {
-  const { data: page } = useQuery({
-    queryKey: ["page", "servicos"],
-    queryFn: () => getPublicPage({ data: { slug: "servicos" } }),
-    staleTime: 60_000,
-  });
+  const page = Route.useLoaderData();
   const c = (page?.content ?? {}) as ServicesContent;
   const services = c.services ?? [];
 

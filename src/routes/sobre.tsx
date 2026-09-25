@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Target, Eye, Heart, Trophy } from "lucide-react";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/sobre")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "sobre"],
+      queryFn: () => getPublicPage({ data: { slug: "sobre" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Sobre — VSMS Solutions" },
@@ -18,11 +23,7 @@ export const Route = createFileRoute("/sobre")({
 });
 
 function Sobre() {
-  const { data: page } = useQuery({
-    queryKey: ["page", "sobre"],
-    queryFn: () => getPublicPage({ data: { slug: "sobre" } }),
-    staleTime: 60_000,
-  });
+  const page = Route.useLoaderData();
   const sections = ((page?.content as any)?.sections ?? []) as { heading?: string; body?: string }[];
   const title = page?.title ?? "Uma empresa orientada a produto";
   const intro = page?.excerpt ?? "A VSMS Solutions cria e opera produtos digitais, plataformas SaaS e soluções de inteligência artificial — pensados para escalar e evoluir junto com pessoas e empresas.";
@@ -41,7 +42,7 @@ function Sobre() {
 
       <section className="mx-auto max-w-5xl px-6 py-24">
         <div className="prose-invert max-w-none space-y-6 text-muted-foreground">
-          {sections.length > 0 ? (
+          {page ? (
             sections.map((s, i) => (
               <div key={i}>
                 {s.heading && <h2 className="text-2xl font-semibold text-foreground">{s.heading}</h2>}

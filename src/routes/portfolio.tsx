@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 export const Route = createFileRoute("/portfolio")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "portfolio"],
+      queryFn: () => getPublicPage({ data: { slug: "portfolio" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Portfólio — VSMS Solutions" },
@@ -26,11 +31,7 @@ const cases = [
 ];
 
 function Portfolio() {
-  const { data: page } = useQuery({
-    queryKey: ["page", "portfolio"],
-    queryFn: () => getPublicPage({ data: { slug: "portfolio" } }),
-    staleTime: 60_000,
-  });
+  const page = Route.useLoaderData();
   const title = page?.title ?? "Projetos que geram resultado";
   const intro = page?.excerpt ?? "Uma seleção de cases reais entregues em diferentes segmentos.";
 

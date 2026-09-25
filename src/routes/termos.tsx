@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { LegalPage } from "@/components/site/LegalPage";
 import { getPublicPage } from "@/lib/site/site.functions";
 
 type LegalContent = { lead?: string; sections?: { heading?: string; body: string }[] };
 
 export const Route = createFileRoute("/termos")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["page", "termos"],
+      queryFn: () => getPublicPage({ data: { slug: "termos" } }),
+      staleTime: 60_000,
+    }),
   head: () => ({
     meta: [
       { title: "Termos de Uso — VSMS Solutions" },
@@ -18,11 +23,7 @@ export const Route = createFileRoute("/termos")({
 });
 
 function TermosPage() {
-  const { data: page } = useQuery({
-    queryKey: ["page", "termos"],
-    queryFn: () => getPublicPage({ data: { slug: "termos" } }),
-    staleTime: 60_000,
-  });
+  const page = Route.useLoaderData();
   const c = (page?.content ?? {}) as LegalContent;
   return (
     <LegalPage title={page?.title ?? "Termos de Uso"} lead={c.lead ?? page?.excerpt ?? "Condições gerais de uso."}>
